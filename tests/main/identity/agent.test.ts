@@ -22,7 +22,10 @@ const SEALING_KEY = new Uint8Array(32).fill(7);
  * could not express it.
  */
 function channelDouble(
-  answers: Record<string, JsonValue | Error>,
+  // `unknown`, not `JsonValue`: several tests hand it a reply with a MISSING field, and modelling
+  // "this key is absent" as a JSON value fights the type system for no benefit — the point of those
+  // fixtures is that the agent validates whatever arrives.
+  answers: Record<string, unknown>,
   granted: string[] = [IDENTITY_ATTEST, IDENTITY_SEAL, IDENTITY_UNSEAL],
 ): PairedChannel & { calls: Array<{ method: string; params: JsonValue }> } {
   const calls: Array<{ method: string; params: JsonValue }> = [];
@@ -32,7 +35,7 @@ function channelDouble(
     grants: (capability: string) => granted.includes(capability),
     call: vi.fn(async (method: string, params: JsonValue) => {
       calls.push({ method, params });
-      const answer = answers[method];
+      const answer = answers[method] as JsonValue | Error | undefined;
       if (answer instanceof Error) throw answer;
       if (answer === undefined) {
         throw new ChannelError('METHOD_NOT_FOUND', -32601, 'error.identityUnsupported');
@@ -76,7 +79,7 @@ describe('attest', () => {
   });
 
   it('refuses a reply missing a field, rather than carrying an empty identity forward', async () => {
-    const partials: JsonValue[] = [
+    const partials: Array<Record<string, unknown>> = [
       { sealing_public_key_b64: toBase64(SEALING_KEY), attestation_b64: 'c2ln' },
       { did: DID, attestation_b64: 'c2ln' },
       { did: DID, sealing_public_key_b64: toBase64(SEALING_KEY) },
