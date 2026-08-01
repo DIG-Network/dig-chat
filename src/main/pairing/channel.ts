@@ -127,12 +127,19 @@ export class WebSocketChannel implements Channel {
   private readonly socket: WebSocket;
   private readonly pending = new Map<
     number,
-    { resolve: (value: JsonValue) => void; reject: (failure: unknown) => void; timer: NodeJS.Timeout }
+    {
+      resolve: (value: JsonValue) => void;
+      reject: (failure: unknown) => void;
+      timer: NodeJS.Timeout;
+    }
   >();
   private nextId = 1;
   private closed = false;
 
-  constructor(socket: WebSocket, private readonly timeoutMs = REQUEST_TIMEOUT_MS) {
+  constructor(
+    socket: WebSocket,
+    private readonly timeoutMs = REQUEST_TIMEOUT_MS,
+  ) {
     this.socket = socket;
     this.socket.on('message', (data: Buffer) => this.receive(data.toString('utf8')));
     this.socket.on('close', () => this.failAll(new ChannelUnreachableError('the channel closed')));
@@ -146,7 +153,9 @@ export class WebSocketChannel implements Channel {
     return new Promise<JsonValue>((resolve, reject) => {
       const timer = setTimeout(() => {
         this.pending.delete(id);
-        reject(new ChannelUnreachableError(`no response to ${frame.method} in ${this.timeoutMs}ms`));
+        reject(
+          new ChannelUnreachableError(`no response to ${frame.method} in ${this.timeoutMs}ms`),
+        );
       }, this.timeoutMs);
       this.pending.set(id, { resolve, reject, timer });
 
@@ -194,7 +203,10 @@ export class WebSocketChannel implements Channel {
   /** Clear a pending entry and hand it to `finish`, cancelling its timeout exactly once. */
   private settle(
     id: number,
-    finish: (waiter: { resolve: (value: JsonValue) => void; reject: (failure: unknown) => void }) => void,
+    finish: (waiter: {
+      resolve: (value: JsonValue) => void;
+      reject: (failure: unknown) => void;
+    }) => void,
   ): void {
     const waiter = this.pending.get(id);
     if (!waiter) return;

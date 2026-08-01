@@ -11,7 +11,10 @@ import { Provider } from 'react-redux';
 import { App } from './components/App';
 import { messagesFor } from './i18n/en';
 import { createAppStore } from './store';
+import { publishAppVersion } from './version';
 import './styles.css';
+
+publishAppVersion();
 
 const locale = navigator.language || 'en';
 const container = document.getElementById('root');

@@ -106,15 +106,18 @@ describe('readCredential', () => {
     // The state of every shipped DIG App: it does not know the field, so it does not send it.
     // Reading absence as "everything" would have dig-chat call identity methods that cannot work
     // and report the failure as a bug rather than as a missing capability.
-    expect(readCredential({ pairing_id: 'p', channel_token_b64: TOKEN }, NOW).grantedCapabilities)
-      .toEqual([]);
+    expect(
+      readCredential({ pairing_id: 'p', channel_token_b64: TOKEN }, NOW).grantedCapabilities,
+    ).toEqual([]);
   });
 
   it('refuses a reply it cannot use', () => {
     // Each of these would otherwise be stored and produce AUTH_BAD_MAC on every later frame, with
     // nothing at the failure site to explain why.
     expect(() => readCredential(null, NOW)).toThrow(ChannelUnreachableError);
-    expect(() => readCredential({ channel_token_b64: TOKEN }, NOW)).toThrow(ChannelUnreachableError);
+    expect(() => readCredential({ channel_token_b64: TOKEN }, NOW)).toThrow(
+      ChannelUnreachableError,
+    );
     expect(() => readCredential({ pairing_id: '', channel_token_b64: TOKEN }, NOW)).toThrow(
       ChannelUnreachableError,
     );
@@ -185,7 +188,10 @@ describe('PairedChannel', () => {
 
   it('survives a clock that steps backwards', async () => {
     const channel = new FakeChannel([null, null]);
-    const clock = vi.fn().mockReturnValueOnce(NOW).mockReturnValueOnce(NOW - 10_000);
+    const clock = vi
+      .fn()
+      .mockReturnValueOnce(NOW)
+      .mockReturnValueOnce(NOW - 10_000);
     const paired = new PairedChannel(channel, credential(), clock);
 
     await paired.call('identity.attest', {});

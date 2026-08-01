@@ -28,7 +28,13 @@ import { sha256 } from '@noble/hashes/sha2';
 export const CHANNEL_SECRET_LEN = 32;
 
 /** A JSON value this codec can render identically to `serde_json`. */
-export type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
+export type JsonValue =
+  | null
+  | boolean
+  | number
+  | string
+  | JsonValue[]
+  | { [key: string]: JsonValue };
 
 /**
  * Thrown when a value cannot be canonicalised to bytes dig-app would derive identically.
@@ -143,9 +149,7 @@ export function frameMacInput(nonce: number, method: string, params: JsonValue):
   const methodBytes = encoder.encode(method);
   const paramsBytes = encoder.encode(canonicalJson(params));
 
-  const input = new Uint8Array(
-    nonceBytes.length + 1 + methodBytes.length + 1 + paramsBytes.length,
-  );
+  const input = new Uint8Array(nonceBytes.length + 1 + methodBytes.length + 1 + paramsBytes.length);
   let at = 0;
   input.set(nonceBytes, at);
   at += nonceBytes.length;

@@ -75,7 +75,11 @@ async function renderApp(preloaded?: Partial<UiState>) {
       getStatus: vi.fn(async () => preloaded.status!),
       getAppInfo: vi.fn(
         async () =>
-          preloaded.appInfo ?? { version: '0.1.0', reachesOtherMachines: false, transport: 'loopback' },
+          preloaded.appInfo ?? {
+            version: '0.1.0',
+            reachesOtherMachines: false,
+            transport: 'loopback',
+          },
       ),
       getHistory: vi.fn(async () => [...(preloaded.messages ?? [])]),
     });

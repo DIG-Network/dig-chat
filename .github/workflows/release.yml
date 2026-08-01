@@ -1,0 +1,48 @@
+name: Release
+
+# The tag push and the release both need write access; nothing else does.
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Release channel
+        required: true
+        default: stable
+        type: choice
+        options: [stable]
+
+jobs:
+  release:
+    name: cut vX.Y.Z
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # The RELEASE_TOKEN identity, not GITHUB_TOKEN: a tag pushed with GITHUB_TOKEN does not
+          # fire tag-triggered workflows, and the release commit has to clear branch protection.
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.4'
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: cut the tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          if git rev-parse "v$version" >/dev/null 2>&1; then
+            echo "::error::v$version already exists — bump package.json first"
+            exit 1
+          fi
+          git config user.name "dig-release"
+          git config user.email "release@dig.net"
+          git tag -a "v$version" -m "dig-chat v$version"
+          git push origin "v$version"
+          gh release create "v$version" --title "dig-chat v$version" --generate-notes

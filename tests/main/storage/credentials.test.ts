@@ -88,14 +88,17 @@ describe('the credential at rest', () => {
     expect(mode).toBe(0o600);
   });
 
-  it.runIf(process.platform !== 'win32')('keeps 0600 when an existing file is overwritten', async () => {
-    // `writeFile`'s `mode` is IGNORED for a file that already exists, so a store that relied on it
-    // alone would be 0600 on the first save and whatever the umask allowed on the second.
-    const store = new CredentialStore(directory, xorSealer());
-    await writeFile(join(directory, CREDENTIAL_FILE), 'stale', { mode: 0o644 });
-    await store.save(CREDENTIAL);
-    expect((await stat(join(directory, CREDENTIAL_FILE))).mode & 0o777).toBe(0o600);
-  });
+  it.runIf(process.platform !== 'win32')(
+    'keeps 0600 when an existing file is overwritten',
+    async () => {
+      // `writeFile`'s `mode` is IGNORED for a file that already exists, so a store that relied on it
+      // alone would be 0600 on the first save and whatever the umask allowed on the second.
+      const store = new CredentialStore(directory, xorSealer());
+      await writeFile(join(directory, CREDENTIAL_FILE), 'stale', { mode: 0o644 });
+      await store.save(CREDENTIAL);
+      expect((await stat(join(directory, CREDENTIAL_FILE))).mode & 0o777).toBe(0o600);
+    },
+  );
 });
 
 describe('loading something that is not a usable credential', () => {

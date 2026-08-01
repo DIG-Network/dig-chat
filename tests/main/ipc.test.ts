@@ -14,7 +14,10 @@ import {
 } from '../../src/main/ipc';
 
 /** An ipcMain double that records the handler table and lets a test invoke one. */
-function host(): IpcHost & { invoke(channel: string, ...args: unknown[]): unknown; channels(): string[] } {
+function host(): IpcHost & {
+  invoke(channel: string, ...args: unknown[]): unknown;
+  channels(): string[];
+} {
   const handlers = new Map<string, (event: unknown, ...args: unknown[]) => unknown>();
   return {
     handle: (channel, listener) => handlers.set(channel, listener),
@@ -78,7 +81,9 @@ describe('every payload is validated as untrusted', () => {
     expect(() => validateSendRequest('a string')).toThrow(InvalidRequestError);
     expect(() => validateSendRequest([])).toThrow(InvalidRequestError);
     expect(() => validateSendRequest({ body: 'hi' })).toThrow(InvalidRequestError);
-    expect(() => validateSendRequest({ recipientDid: '', body: 'hi' })).toThrow(InvalidRequestError);
+    expect(() => validateSendRequest({ recipientDid: '', body: 'hi' })).toThrow(
+      InvalidRequestError,
+    );
     expect(() => validateSendRequest({ recipientDid: 'did:chia:x' })).toThrow(InvalidRequestError);
     expect(() => validateSendRequest({ recipientDid: 'did:chia:x', body: 7 })).toThrow(
       InvalidRequestError,

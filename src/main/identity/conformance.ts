@@ -77,7 +77,9 @@ export function deriveKey(
   ephemeralPublicKey: Uint8Array,
   recipientPublicKey: Uint8Array,
 ): Uint8Array {
-  const ikm = new Uint8Array(sharedSecret.length + ephemeralPublicKey.length + recipientPublicKey.length);
+  const ikm = new Uint8Array(
+    sharedSecret.length + ephemeralPublicKey.length + recipientPublicKey.length,
+  );
   ikm.set(sharedSecret, 0);
   ikm.set(ephemeralPublicKey, sharedSecret.length);
   ikm.set(recipientPublicKey, sharedSecret.length + ephemeralPublicKey.length);
@@ -104,7 +106,10 @@ export function sealReference(inputs: SealInputs): Uint8Array {
   }
 
   const epk = x25519.getPublicKey(inputs.ephemeralSecretKey);
-  const shared = x25519.getSharedSecret(inputs.ephemeralSecretKey, inputs.recipientSealingPublicKey);
+  const shared = x25519.getSharedSecret(
+    inputs.ephemeralSecretKey,
+    inputs.recipientSealingPublicKey,
+  );
   const key = deriveKey(shared, epk, inputs.recipientSealingPublicKey);
 
   const header = {

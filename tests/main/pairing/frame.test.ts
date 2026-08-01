@@ -104,7 +104,9 @@ describe('frameMac', () => {
   it('matches an independently computed HMAC-SHA256 over the canonical input', async () => {
     const { createHmac } = await import('node:crypto');
     const key = new Uint8Array(32).fill(7);
-    const expected = createHmac('sha256', key).update(frameMacInput(1, 'm', {})).digest('base64');
+    const expected = createHmac('sha256', key)
+      .update(frameMacInput(1, 'm', {}))
+      .digest('base64');
     expect(frameMac(key, 1, 'm', {})).toBe(expected);
   });
 

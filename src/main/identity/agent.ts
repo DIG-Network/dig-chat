@@ -71,7 +71,10 @@ export interface OpenedMessage {
 export class IdentityUnsupportedError extends Error {
   readonly messageId = 'error.identityUnsupported';
 
-  constructor(readonly method: string, cause?: unknown) {
+  constructor(
+    readonly method: string,
+    cause?: unknown,
+  ) {
     super(`this DIG App does not offer ${method}`);
     this.name = 'IdentityUnsupportedError';
     this.cause = cause;

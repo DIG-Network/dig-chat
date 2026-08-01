@@ -1,0 +1,90 @@
+name: CI
+
+# Least privilege: every job here only reads the repository. Nothing in CI needs to write to it, and
+# a default-permissive token on a workflow that runs untrusted PR code is how a repo gets rewritten.
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20.19.4'
+
+jobs:
+  quality:
+    name: format, lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: format
+        run: npm run format:check
+      - name: lint (warnings are errors)
+        run: npm run lint
+      - name: typecheck
+        run: npm run typecheck
+      # Coverage thresholds live in vitest.config.ts (lines/branches/functions/statements >= 80),
+      # so a suite that drops below the ecosystem floor fails HERE rather than in a review comment.
+      - name: test + coverage
+        run: npm run coverage
+      - name: build
+        run: npm run build
+
+  commitlint:
+    name: commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # Every commit on the PR, not just the last: a squash-merge takes the PR TITLE, but a
+      # non-conforming commit in the middle still fails the ecosystem's convention (§3.2).
+      - name: lint commit messages
+        if: github.event_name == 'pull_request'
+        run: >
+          npx commitlint
+          --from ${{ github.event.pull_request.base.sha }}
+          --to ${{ github.event.pull_request.head.sha }}
+          --verbose
+
+  version:
+    name: version increment
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: the version must increase
+        run: |
+          set -euo pipefail
+          base=$(git show ${{ github.event.pull_request.base.sha }}:package.json | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")
+          head=$(node -p "require('./package.json').version")
+          echo "base=$base head=$head"
+          if [ "$base" = "$head" ]; then
+            echo "::error::package.json version is unchanged ($head). Bump it per SemVer (ecosystem §2.4)."
+            exit 1
+          fi
+          # A pure string comparison would accept a DECREASE. Sorting both and taking the greater is
+          # what makes this a monotonicity check rather than a difference check.
+          greater=$(printf '%s\n%s\n' "$base" "$head" | sort -V | tail -1)
+          if [ "$greater" != "$head" ]; then
+            echo "::error::version went backwards: $base -> $head"
+            exit 1
+          fi

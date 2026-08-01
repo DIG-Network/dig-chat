@@ -106,8 +106,12 @@ describe('IPC payloads are untrusted input', () => {
     expect(() => validateSendRequest([])).toThrow(InvalidRequestError);
     expect(() => validateSendRequest('did:chia:bob')).toThrow(InvalidRequestError);
     expect(() => validateSendRequest({ body: 'hi' })).toThrow(InvalidRequestError);
-    expect(() => validateSendRequest({ recipientDid: '', body: 'hi' })).toThrow(InvalidRequestError);
-    expect(() => validateSendRequest({ recipientDid: 'did:chia:bob' })).toThrow(InvalidRequestError);
+    expect(() => validateSendRequest({ recipientDid: '', body: 'hi' })).toThrow(
+      InvalidRequestError,
+    );
+    expect(() => validateSendRequest({ recipientDid: 'did:chia:bob' })).toThrow(
+      InvalidRequestError,
+    );
     expect(() => validateSendRequest({ recipientDid: 'did:chia:bob', body: 7 })).toThrow(
       InvalidRequestError,
     );
@@ -122,7 +126,10 @@ describe('IPC payloads are untrusted input', () => {
     ).toThrow(InvalidRequestError);
     // …and at each bound it is accepted, so the bounds are real rather than "anything long fails".
     expect(() =>
-      validateSendRequest({ recipientDid: 'd'.repeat(MAX_DID_INPUT), body: 'x'.repeat(MAX_BODY_INPUT) }),
+      validateSendRequest({
+        recipientDid: 'd'.repeat(MAX_DID_INPUT),
+        body: 'x'.repeat(MAX_BODY_INPUT),
+      }),
     ).not.toThrow();
   });
 

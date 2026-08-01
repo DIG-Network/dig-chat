@@ -34,7 +34,11 @@ export const APP_LABEL = 'DIG Chat';
  * added it would hand a chat client the power to move money, which is the exact boundary
  * dig_ecosystem#1848 established and dig_ecosystem#1913 refused to dissolve.
  */
-export const REQUESTED_CAPABILITIES = ['identity.attest', 'identity.seal', 'identity.unseal'] as const;
+export const REQUESTED_CAPABILITIES = [
+  'identity.attest',
+  'identity.seal',
+  'identity.unseal',
+] as const;
 
 /** What dig-chat keeps after a successful pairing. The secret in it is a credential. */
 export interface PairingCredential {

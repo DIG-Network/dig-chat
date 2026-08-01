@@ -152,8 +152,6 @@ export function registerIpcHandlers(host: IpcHost, services: IpcServices): void 
   host.handle(CHANNELS.sessionPair, (_event, code) => services.pair(validateCode(code)));
   host.handle(CHANNELS.sessionForget, () => services.forget());
   host.handle(CHANNELS.chatHistory, () => services.history());
-  host.handle(CHANNELS.chatSend, (_event, request) =>
-    services.send(validateSendRequest(request)),
-  );
+  host.handle(CHANNELS.chatSend, (_event, request) => services.send(validateSendRequest(request)));
   host.handle(CHANNELS.appInfo, () => services.info());
 }

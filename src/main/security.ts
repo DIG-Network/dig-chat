@@ -58,7 +58,7 @@ export const CONTENT_SECURITY_POLICY = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self'",
-  "connect-src https://api.bugreport.dig.net",
+  'connect-src https://api.bugreport.dig.net',
   "base-uri 'none'",
   "form-action 'none'",
   "frame-ancestors 'none'",

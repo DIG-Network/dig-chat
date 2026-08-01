@@ -102,7 +102,10 @@ export class Conversation {
 
     const plaintext = new TextEncoder().encode(trimmed);
     if (plaintext.length > MAX_PLAINTEXT_BYTES) {
-      throw new SendError('error.messageTooLong', `a message may carry ${MAX_PLAINTEXT_BYTES} bytes`);
+      throw new SendError(
+        'error.messageTooLong',
+        `a message may carry ${MAX_PLAINTEXT_BYTES} bytes`,
+      );
     }
 
     const envelope = await this.deps.agent.seal(recipient, plaintext);
@@ -184,6 +187,9 @@ function assertSealed(envelope: Uint8Array, recipientDid: string): void {
     );
   }
   if (decoded.recipientDid !== recipientDid) {
-    throw new SendError('error.sealFailed', 'refusing to send: the envelope is addressed elsewhere');
+    throw new SendError(
+      'error.sealFailed',
+      'refusing to send: the envelope is addressed elsewhere',
+    );
   }
 }

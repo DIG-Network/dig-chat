@@ -275,7 +275,9 @@ describe('LoopbackTransport', () => {
     transport.subscribe((envelope) => received.push(envelope));
     transport.close();
 
-    await expect(transport.send({ recipientDid: 'x', envelope: new Uint8Array(1) })).rejects.toThrow();
+    await expect(
+      transport.send({ recipientDid: 'x', envelope: new Uint8Array(1) }),
+    ).rejects.toThrow();
     expect(received).toHaveLength(0);
   });
 

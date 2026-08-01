@@ -76,19 +76,22 @@ describe('attest', () => {
   });
 
   it('refuses a reply missing a field, rather than carrying an empty identity forward', async () => {
-    for (const partial of [
+    const partials: JsonValue[] = [
       { sealing_public_key_b64: toBase64(SEALING_KEY), attestation_b64: 'c2ln' },
       { did: DID, attestation_b64: 'c2ln' },
       { did: DID, sealing_public_key_b64: toBase64(SEALING_KEY) },
       { did: '', sealing_public_key_b64: toBase64(SEALING_KEY), attestation_b64: 'c2ln' },
-    ]) {
+    ];
+    for (const partial of partials) {
       const agent = new PairedIdentityAgent(channelDouble({ [IDENTITY_ATTEST]: partial }));
       await expect(agent.attest()).rejects.toBeInstanceOf(ChannelUnreachableError);
     }
   });
 
   it('refuses a result that is not an object', async () => {
-    const agent = new PairedIdentityAgent(channelDouble({ [IDENTITY_ATTEST]: ['not', 'an object'] }));
+    const agent = new PairedIdentityAgent(
+      channelDouble({ [IDENTITY_ATTEST]: ['not', 'an object'] }),
+    );
     await expect(agent.attest()).rejects.toBeInstanceOf(ChannelUnreachableError);
   });
 });
@@ -97,7 +100,9 @@ describe('seal and unseal', () => {
   const identity = { did: DID, sealingPublicKey: SEALING_KEY, attestationB64: 'c2ln' };
 
   it('sends the recipient and the plaintext, and returns the envelope', async () => {
-    const channel = channelDouble({ [IDENTITY_SEAL]: { envelope_b64: toBase64(new Uint8Array([1, 2, 3])) } });
+    const channel = channelDouble({
+      [IDENTITY_SEAL]: { envelope_b64: toBase64(new Uint8Array([1, 2, 3])) },
+    });
     const agent = new PairedIdentityAgent(channel);
 
     const envelope = await agent.seal(identity, new TextEncoder().encode('hi'));

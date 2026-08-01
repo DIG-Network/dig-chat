@@ -14,14 +14,16 @@ export const en = {
   'app.version': 'Version {version}',
 
   'state.checking.heading': 'Looking for your DIG App…',
-  'state.checking.body': 'DIG Chat is checking whether it is paired and whether the DIG App is running.',
+  'state.checking.body':
+    'DIG Chat is checking whether it is paired and whether the DIG App is running.',
 
   'state.unpaired.heading': 'Pair DIG Chat with your DIG identity',
   'state.unpaired.body':
     'DIG Chat uses your DIG identity to encrypt messages. It can never spend from your wallet.',
   'state.unpaired.step1': 'Open the DIG App and choose Security → Pair an app.',
   'state.unpaired.step2': 'The DIG App shows you an eight-character code, good for two minutes.',
-  'state.unpaired.step3': 'Type that code below. The DIG App will ask you to approve DIG Chat by name.',
+  'state.unpaired.step3':
+    'Type that code below. The DIG App will ask you to approve DIG Chat by name.',
   'state.unpaired.codeLabel': 'Pairing code',
   'state.unpaired.codeHint': 'Eight characters, like ABCD-EFGH. Upper or lower case both work.',
   'state.unpaired.submit': 'Pair with the DIG App',
@@ -88,7 +90,8 @@ export const en = {
   'error.locked': 'Your DIG Account is locked. Unlock it in the DIG App and try again.',
   'error.capNotGranted':
     'This pairing was not granted the identity capability DIG Chat needs. Pair again, and approve the identity request.',
-  'error.identityUnsupported': 'This version of the DIG App does not offer identity operations yet.',
+  'error.identityUnsupported':
+    'This version of the DIG App does not offer identity operations yet.',
   'error.credentialStorageUnavailable':
     'DIG Chat could not store the pairing securely on this system, so it did not store it at all. You will need to pair again next time.',
   'error.emptyMessage': 'Type something to send.',

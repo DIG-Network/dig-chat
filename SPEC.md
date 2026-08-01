@@ -40,12 +40,12 @@ obtains identity operations exclusively through the DIG App's pairing channel.
 dig-chat connects to the DIG App identity loopback channel: a WebSocket carrying JSON-RPC 2.0 text
 frames.
 
-| property | value |
-|---|---|
-| port | `9779` |
-| endpoints, in order | `ws://[::1]:9779`, then `ws://127.0.0.1:9779` |
-| `Host` header | the endpoint's authority verbatim — one of `[::1]:9779`, `127.0.0.1:9779`, `localhost:9779` |
-| `Origin` header | ABSENT |
+| property            | value                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| port                | `9779`                                                                                      |
+| endpoints, in order | `ws://[::1]:9779`, then `ws://127.0.0.1:9779`                                               |
+| `Host` header       | the endpoint's authority verbatim — one of `[::1]:9779`, `127.0.0.1:9779`, `localhost:9779` |
+| `Origin` header     | ABSENT                                                                                      |
 
 The `Origin` header MUST be absent. The DIG App admits a caller that sends no `Origin` on the
 inference that browsers always attach one, so its absence identifies a native client. It follows that
@@ -60,13 +60,13 @@ other; both failing means the DIG App is not running.
 The DIG App mints the code and displays it to the user. dig-chat MUST NOT have any way to request
 one.
 
-| property | value |
-|---|---|
-| alphabet | Crockford base32: `0123456789ABCDEFGHJKMNPQRSTVWXYZ` |
-| length | 8 symbols |
-| time to live | 120 seconds from issue |
-| attempts | 5; the fifth failure DESTROYS the code |
-| uses | 1 |
+| property     | value                                                |
+| ------------ | ---------------------------------------------------- |
+| alphabet     | Crockford base32: `0123456789ABCDEFGHJKMNPQRSTVWXYZ` |
+| length       | 8 symbols                                            |
+| time to live | 120 seconds from issue                               |
+| attempts     | 5; the fifth failure DESTROYS the code               |
+| uses         | 1                                                    |
 
 Before sending, dig-chat normalises what the user typed: uppercase; `I` and `L` fold to `1`; `O`
 folds to `0`; every character outside the alphabet is dropped. A candidate that does not normalise to
@@ -79,7 +79,9 @@ Sent without an `auth` object — there is no pairing yet to authenticate agains
 
 ```json
 {
-  "jsonrpc": "2.0", "id": 1, "method": "pair.begin",
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "pair.begin",
   "params": {
     "ext_id": "net.dig.chat",
     "ext_label": "DIG Chat",
@@ -138,17 +140,17 @@ from the epoch-millisecond clock and takes `max(previous + 1, clock())` for each
 
 ### 2.5 Errors
 
-| symbol | code | meaning |
-|---|---|---|
-| `AUTH_REQUIRED` | -33001 | no live pairing for this `pairing_id` — revoked, or never paired |
-| `AUTH_BAD_MAC` | -33002 | MAC mismatch |
-| `AUTH_REPLAY` | -33003 | nonce not strictly greater |
-| `PAIR_DENIED` | -33010 | the user declined |
-| `PAIR_TIMEOUT` | -33011 | the user did not answer |
-| `PAIR_CODE_REJECTED` | -33012 | the code was not accepted |
-| `LOCKED` | -33040 | the DIG Account is locked |
-| `CAP_NOT_GRANTED` | -33050 | authenticated, but this pairing lacks the capability |
-| (JSON-RPC) | -32601 | the method does not exist in this DIG App |
+| symbol               | code   | meaning                                                          |
+| -------------------- | ------ | ---------------------------------------------------------------- |
+| `AUTH_REQUIRED`      | -33001 | no live pairing for this `pairing_id` — revoked, or never paired |
+| `AUTH_BAD_MAC`       | -33002 | MAC mismatch                                                     |
+| `AUTH_REPLAY`        | -33003 | nonce not strictly greater                                       |
+| `PAIR_DENIED`        | -33010 | the user declined                                                |
+| `PAIR_TIMEOUT`       | -33011 | the user did not answer                                          |
+| `PAIR_CODE_REJECTED` | -33012 | the code was not accepted                                        |
+| `LOCKED`             | -33040 | the DIG Account is locked                                        |
+| `CAP_NOT_GRANTED`    | -33050 | authenticated, but this pairing lacks the capability             |
+| (JSON-RPC)           | -32601 | the method does not exist in this DIG App                        |
 
 `PAIR_CODE_REJECTED` is ONE code for four distinct causes — no code outstanding, expired, wrong,
 budget exhausted. This is deliberate on the DIG App's side: distinguishing them would reveal whether a
@@ -190,9 +192,11 @@ as an open edge.
 ### 3.3 `identity.seal`
 
 ```json
-{ "recipient_did": "did:chia:…",
+{
+  "recipient_did": "did:chia:…",
   "recipient_sealing_public_key_b64": "<base64>",
-  "plaintext_b64": "<base64>" }
+  "plaintext_b64": "<base64>"
+}
 ```
 
 Result: `{ "envelope_b64": "<base64 of a DIGCHAT1 envelope>" }`.
@@ -281,13 +285,13 @@ than implied.
 
 dig-chat MUST distinguish five states and MUST NOT collapse them:
 
-| state | fact |
-|---|---|
-| `checking` | not yet determined — an unknown, not a negative |
-| `unpaired` | no pairing exists on this machine |
-| `app-unreachable` | a pairing exists; nothing answered on the identity port |
-| `identity-unsupported` | the DIG App answered but offers no identity capability |
-| `connected` | paired, reachable, and `identity.attest` succeeded |
+| state                  | fact                                                    |
+| ---------------------- | ------------------------------------------------------- |
+| `checking`             | not yet determined — an unknown, not a negative         |
+| `unpaired`             | no pairing exists on this machine                       |
+| `app-unreachable`      | a pairing exists; nothing answered on the identity port |
+| `identity-unsupported` | the DIG App answered but offers no identity capability  |
+| `connected`            | paired, reachable, and `identity.attest` succeeded      |
 
 `connected` MUST NOT be reported on the strength of an opened socket. The probe is `identity.attest`,
 which establishes all three facts at once.
@@ -305,16 +309,16 @@ it in the clear, and MUST tell the user that the pairing was not saved.
 
 ### 5.3 Renderer isolation
 
-| setting | value |
-|---|---|
-| `contextIsolation` | `true` |
-| `nodeIntegration` | `false` |
+| setting                                   | value   |
+| ----------------------------------------- | ------- |
+| `contextIsolation`                        | `true`  |
+| `nodeIntegration`                         | `false` |
 | `nodeIntegrationInWorker` / `InSubFrames` | `false` |
-| `sandbox` | `true` |
-| `webSecurity` | `true` |
-| `allowRunningInsecureContent` | `false` |
-| `webviewTag` | `false` |
-| `experimentalFeatures` | `false` |
+| `sandbox`                                 | `true`  |
+| `webSecurity`                             | `true`  |
+| `allowRunningInsecureContent`             | `false` |
+| `webviewTag`                              | `false` |
+| `experimentalFeatures`                    | `false` |
 
 The Content-Security-Policy is served as a response HEADER and starts `default-src 'none'`. No remote
 origin appears in any directive. `style-src` permits `'unsafe-inline'` for React's inline styles and
