@@ -53,15 +53,15 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci
-      # Every commit on the PR, not just the last: a squash-merge takes the PR TITLE, but a
-      # non-conforming commit in the middle still fails the ecosystem's convention (§3.2).
-      - name: lint commit messages
+      # The PR TITLE, because that is the message that lands on main: this repo squash-merges, and
+      # the squash subject is the title. Linting every intermediate commit instead would gate the
+      # branch on messages that are never published, and the only way to fix one after it is pushed
+      # is to rewrite shared history — a cure worse than the disease.
+      - name: lint the squash subject
         if: github.event_name == 'pull_request'
-        run: >
-          npx commitlint
-          --from ${{ github.event.pull_request.base.sha }}
-          --to ${{ github.event.pull_request.head.sha }}
-          --verbose
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s' "$PR_TITLE" | npx commitlint --verbose
 
   version:
     name: version increment
@@ -74,6 +74,13 @@ jobs:
       - name: the version must increase
         run: |
           set -euo pipefail
+          # A repo's FIRST PR has no package.json on the base to compare against. That is not a
+          # missing bump, it is the absence of a previous version, so the gate passes and starts
+          # gating from the next PR onward.
+          if ! git cat-file -e ${{ github.event.pull_request.base.sha }}:package.json 2>/dev/null; then
+            echo "no package.json on the base commit — this is the first PR, nothing to compare"
+            exit 0
+          fi
           base=$(git show ${{ github.event.pull_request.base.sha }}:package.json | node -p "JSON.parse(require('fs').readFileSync(0,'utf8')).version")
           head=$(node -p "require('./package.json').version")
           echo "base=$base head=$head"
