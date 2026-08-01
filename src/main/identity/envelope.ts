@@ -182,8 +182,11 @@ export function associatedData(
 ): Uint8Array {
   const sender = utf8(envelope.senderDid, 'sender');
   const recipient = utf8(envelope.recipientDid, 'recipient');
-  const bytes = new Uint8Array(MAGIC.length + 2 + 2 + sender.length + 2 + recipient.length + EPK_LEN);
-  void sender; void recipient;
+  const bytes = new Uint8Array(
+    MAGIC.length + 2 + 2 + sender.length + 2 + recipient.length + EPK_LEN,
+  );
+  void sender;
+  void recipient;
   const view = new DataView(bytes.buffer);
   let at = 0;
   bytes.set(MAGIC, at);
