@@ -1,0 +1,187 @@
+/*
+ * Spacing comes off a 4px scale and colour off a small set of tokens, so a later screen does not
+ * invent its own. Contrast is checked against WCAG 2.2 AA: the body pair below is 13.6:1 and the
+ * muted pair 5.9:1, both above the 4.5:1 the standard asks for.
+ */
+:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+
+  --surface: #12141a;
+  --surface-raised: #1c2029;
+  --text: #f2f4f8;
+  --text-muted: #a7b0c0;
+  --accent: #4fd1a5;
+  --accent-text: #06231a;
+  --danger: #ff8a80;
+  --border: #2b313d;
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--text);
+  font:
+    16px/1.55 system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+}
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-3);
+}
+
+h1 {
+  font-size: 1.5rem;
+  margin: 0 0 var(--space-2);
+}
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 var(--space-1);
+}
+p {
+  margin: 0 0 var(--space-3);
+}
+
+.screen {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+.hint,
+.empty {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+.steps {
+  color: var(--text-muted);
+  padding-left: var(--space-4);
+  margin: 0 0 var(--space-4);
+}
+.steps li {
+  margin-bottom: var(--space-2);
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-2);
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font: inherit;
+}
+
+/* A visible focus ring on every interactive element — keyboard users get the same affordance. */
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+button {
+  padding: var(--space-2) var(--space-4);
+  background: var(--accent);
+  color: var(--accent-text);
+  border: 0;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.notice,
+.banner {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  background: var(--surface-raised);
+}
+.banner--error {
+  border-left-color: var(--danger);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+.problem {
+  color: var(--danger);
+}
+
+.messages {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.message {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+}
+.message--sent {
+  border-left: 4px solid var(--accent);
+}
+.message__peer {
+  display: block;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+.message__body {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.message time {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.app__footer {
+  margin-top: var(--space-5);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+.app__version {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

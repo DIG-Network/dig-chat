@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!--
+      The CSP is ALSO served as a header by the main process. Both, deliberately: the header cannot be
+      displaced by injected markup appearing earlier in the document, and the meta tag still applies
+      when the document is opened outside the app shell.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src https://api.bugreport.dig.net; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; object-src 'none'"
+    />
+    <!-- The build injects the package.json version here; the BugReportButton reads it (§6.7). -->
+    <meta name="app-version" content="__APP_VERSION__" />
+    <title>DIG Chat</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>
