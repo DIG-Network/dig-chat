@@ -94,7 +94,8 @@ describe('NC-1: what travels is ciphertext', () => {
   it('refuses a flipped bit in the body', () => {
     const wire = seal(new TextEncoder().encode('for Bob only'));
     const tampered = Uint8Array.from(wire);
-    tampered[tampered.length - 1] ^= 0x01;
+    const last = tampered.length - 1;
+    tampered[last] = (tampered[last] ?? 0) ^ 0x01;
     expect(() => openReference(tampered, BOB_SECRET)).toThrow(EnvelopeError);
   });
 

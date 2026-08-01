@@ -75,7 +75,13 @@ export const CONTENT_SECURITY_POLICY = [
  */
 export function isInternalNavigation(url: string, appOrigin: string): boolean {
   try {
-    return new URL(url).origin === new URL(appOrigin).origin;
+    const candidate = new URL(url);
+    const app = new URL(appOrigin);
+    // Compared field by field, NOT via `URL.origin`. For a non-special scheme — which `app:` is, and
+    // so is `file:` — the WHATWG spec makes `origin` the opaque string "null", so comparing origins
+    // reports a `file:///etc/passwd` navigation as internal to an `app://` window. Two different
+    // schemes comparing EQUAL is precisely the wrong direction for a navigation guard to fail in.
+    return candidate.protocol === app.protocol && candidate.host === app.host;
   } catch {
     return false;
   }

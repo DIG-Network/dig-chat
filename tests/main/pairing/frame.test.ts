@@ -59,7 +59,7 @@ describe('canonicalJson', () => {
     // behaviour: the alternative is a signature mismatch nobody can trace.
     expect(() => canonicalJson({ n: 1.5 })).toThrow(CanonicalJsonError);
     expect(() => canonicalJson({ n: Number.NaN })).toThrow(CanonicalJsonError);
-    expect(() => canonicalJson({ n: 1e400 })).toThrow(CanonicalJsonError);
+    expect(() => canonicalJson({ n: Number.POSITIVE_INFINITY })).toThrow(CanonicalJsonError);
     expect(() => canonicalJson({ big: 2n as unknown as number })).toThrow(CanonicalJsonError);
     expect(() => canonicalJson({ when: new Date() as unknown as number })).toThrow(
       CanonicalJsonError,

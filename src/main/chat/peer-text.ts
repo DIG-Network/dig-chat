@@ -36,7 +36,10 @@ export const MAX_PEER_TEXT_CHARS = 4_000;
  * - **U+FEFF** — a zero-width no-break space that survives trimming and makes two visually identical
  *   DIDs unequal.
  */
+// Control characters in a character class are exactly the point of this expression: it exists to
+// REMOVE them. The rule guards against writing one by accident, which is not what is happening here.
 const DISALLOWED =
+  // eslint-disable-next-line no-control-regex
   /[\u0000-\u0008\u000B-\u001F\u007F-\u009F\u202A-\u202E\u2066-\u2069\uFEFF]/g;
 
 /**
