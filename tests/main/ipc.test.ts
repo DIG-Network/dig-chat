@@ -8,8 +8,12 @@ import {
   MAX_DID_INPUT,
   registerIpcHandlers,
   MAX_LOCALE_INPUT,
+  MAX_PASSPHRASE_INPUT,
   validateCode,
   validateLocale,
+  validatePassphrase,
+  validatePeerDid,
+  validateRetentionDays,
   validateSendRequest,
   type IpcHost,
   type IpcServices,
@@ -50,6 +54,12 @@ function services(): IpcServices {
     })),
     getLocale: vi.fn(async () => null),
     setLocale: vi.fn(async (locale: string) => locale),
+    exportHistory: vi.fn(async () => ({ saved: true, path: '/tmp/chat.digchat' })),
+    importHistory: vi.fn(async () => ({ added: 2, total: 5 })),
+    getRetention: vi.fn(async () => 0),
+    setRetention: vi.fn(async (days: number) => days),
+    clearConversation: vi.fn(async () => undefined),
+    clearAllHistory: vi.fn(async () => undefined),
   };
 }
 
@@ -126,6 +136,32 @@ describe('every payload is validated as untrusted', () => {
     );
   });
 
+  it('refuses a passphrase that is not a bounded non-empty string', () => {
+    expect(() => validatePassphrase(undefined)).toThrow(InvalidRequestError);
+    expect(() => validatePassphrase(42)).toThrow(InvalidRequestError);
+    expect(() => validatePassphrase('')).toThrow(InvalidRequestError);
+    expect(() => validatePassphrase('p'.repeat(MAX_PASSPHRASE_INPUT + 1))).toThrow(
+      InvalidRequestError,
+    );
+    expect(validatePassphrase('p'.repeat(MAX_PASSPHRASE_INPUT))).toHaveLength(MAX_PASSPHRASE_INPUT);
+  });
+
+  it('coerces a bad retention-days value to 0 rather than rejecting it', () => {
+    // A retention window is a setting; an out-of-shape value degrades to "disabled" (keep everything),
+    // which can only ever retain MORE than asked — never crash, never evict more.
+    expect(validateRetentionDays(30)).toBe(30);
+    expect(validateRetentionDays(-5)).toBe(0);
+    expect(validateRetentionDays(Number.NaN)).toBe(0);
+    expect(validateRetentionDays('lots')).toBe(0);
+    expect(validateRetentionDays(7.9)).toBe(7);
+  });
+
+  it('refuses a peer DID that is not a bounded string', () => {
+    expect(() => validatePeerDid(42)).toThrow(InvalidRequestError);
+    expect(() => validatePeerDid('d'.repeat(MAX_DID_INPUT + 1))).toThrow(InvalidRequestError);
+    expect(validatePeerDid('did:chia:bob')).toBe('did:chia:bob');
+  });
+
   it('keeps the offending value out of the error message', () => {
     // The message reaches a log, and the value may be peer-influenced. An error that echoed it back
     // would be the log-injection defect wearing a different hat.
@@ -174,5 +210,29 @@ describe('the handlers validate before they act', () => {
     await ipc.invoke(CHANNELS.sessionForget);
     expect(wired.refresh).toHaveBeenCalled();
     expect(wired.forget).toHaveBeenCalled();
+  });
+
+  it('wires the archive and retention channels, validating each payload first', async () => {
+    const ipc = host();
+    const wired = services();
+    registerIpcHandlers(ipc, wired);
+
+    expect(() => ipc.invoke(CHANNELS.historyExport, 42)).toThrow(InvalidRequestError);
+    expect(wired.exportHistory).not.toHaveBeenCalled();
+    await ipc.invoke(CHANNELS.historyExport, 'a strong passphrase');
+    expect(wired.exportHistory).toHaveBeenCalledWith('a strong passphrase');
+
+    await ipc.invoke(CHANNELS.historyImport, 'a strong passphrase');
+    expect(wired.importHistory).toHaveBeenCalledWith('a strong passphrase');
+
+    expect(await ipc.invoke(CHANNELS.retentionGet)).toBe(0);
+    await ipc.invoke(CHANNELS.retentionSet, -1);
+    expect(wired.setRetention).toHaveBeenCalledWith(0);
+
+    await ipc.invoke(CHANNELS.historyClearConversation, 'did:chia:bob');
+    expect(wired.clearConversation).toHaveBeenCalledWith('did:chia:bob');
+
+    await ipc.invoke(CHANNELS.historyClearAll);
+    expect(wired.clearAllHistory).toHaveBeenCalled();
   });
 });
