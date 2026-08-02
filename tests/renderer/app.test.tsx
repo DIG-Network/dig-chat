@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '../../src/renderer/components/App';
-import { messagesFor } from '../../src/renderer/i18n/en';
+import { messagesFor } from '../../src/renderer/i18n/catalog';
 import { createAppStore, type UiState } from '../../src/renderer/store';
 import type { DigChatApi } from '../../src/preload/index';
 import type { SessionStatus } from '../../src/main/session';
@@ -48,6 +48,8 @@ function installBridge(over: Partial<DigChatApi> = {}): DigChatApi {
       transport: 'loopback',
       historyPersisted: true,
     })),
+    getLocale: vi.fn(async () => null),
+    setLocale: vi.fn(async (locale: string) => locale),
     onSessionChanged: vi.fn(() => () => undefined),
     onChatChanged: vi.fn(() => () => undefined),
     ...over,

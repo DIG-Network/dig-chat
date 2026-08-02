@@ -375,6 +375,33 @@ Newlines survive in a message body and are removed from an identifier.
 Peer text MUST NOT be interpolated into markup or written to a log without passing through that
 function.
 
+### 5.6 Internationalization
+
+dig-chat presents its interface in the ecosystem's fourteen locales: **en, zh-CN, zh-TW, ko, ja, ru,
+es, pt-BR, fr, de, tr, vi, id, hi**. English is the default and the fallback.
+
+- **Every user-facing string is in a message catalog** (`src/renderer/i18n/<locale>.ts`), keyed by a
+  stable dotted id, and rendered through react-intl. No copy is written inline in a component. Numbers,
+  plurals and interpolations go through ICU message syntax, never string concatenation.
+- **Brand and scheme literals are preserved verbatim in every locale**: `DIG Chat`, `DIG App`,
+  `DIG identity`, `DIG Account`, `DID`, `did:chia:`, the `DIGCHAT1` envelope name, and the
+  `identity.attest`/`identity.seal`/`identity.unseal` capability names.
+- **Every catalog carries EXACTLY the English key set** — no missing id, no extra id, no empty value.
+  A completeness test enforces this, so a newly added string cannot ship untranslated. TypeScript
+  additionally types each catalog against the English key set.
+- **Locale resolution** is deterministic (`src/shared/locales.ts`): a valid persisted choice wins;
+  otherwise the browser/OS preference list is walked, resolving each tag by exact match, then
+  region/script override (`zh-HK → zh-TW`), then primary-language fallback (`pt-PT → pt-BR`,
+  `en-GB → en`); an unmatched preference list falls back to English.
+- **The chosen locale is user-overridable and persisted** across restarts. The renderer offers a
+  language selector; the choice is stored by the main process in a plain-JSON preference file under
+  `userData` (a locale is not a secret, so it is NOT sealed like the credential/history). The value on
+  disk is treated as untrusted: an unsupported or malformed value degrades to English, never crashes.
+- **The locale crosses the IPC boundary through two validated verbs only** (`locale:get` / `locale:set`),
+  which do not widen the preload surface beyond a single get/set pair. `locale:set` validates its
+  argument as untrusted input (§5.3): a non-string is refused; an unsupported or over-long string is
+  coerced to the default rather than trusted.
+
 ---
 
 ## 6. Open edges

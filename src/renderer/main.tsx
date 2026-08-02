@@ -5,27 +5,28 @@
 
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 
 import { App } from './components/App';
-import { messagesFor } from './i18n/en';
+import { IntlBoundary } from './components/IntlBoundary';
 import { createAppStore } from './store';
 import { publishAppVersion } from './version';
 import './styles.css';
 
 publishAppVersion();
 
-const locale = navigator.language || 'en';
+// The locale is resolved asynchronously from the persisted choice / browser preference (App dispatches
+// `initLocale` on mount) and lives in the store, so the provider that consumes it is `IntlBoundary`
+// inside the store — not a fixed locale computed here.
 const container = document.getElementById('root');
 
 if (container) {
   createRoot(container).render(
     <StrictMode>
       <Provider store={createAppStore()}>
-        <IntlProvider locale={locale} defaultLocale="en" messages={messagesFor(locale)}>
+        <IntlBoundary>
           <App />
-        </IntlProvider>
+        </IntlBoundary>
       </Provider>
     </StrictMode>,
   );

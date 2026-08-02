@@ -15,6 +15,7 @@ import { LoopbackTransport } from './transport/loopback';
 import { Session } from './session';
 import { CredentialStore } from './storage/credentials';
 import { HistoryStore } from './storage/history';
+import { LocaleStore } from './storage/locale';
 import { loopbackChannelFactory } from './pairing/channel';
 import {
   CONTENT_SECURITY_POLICY,
@@ -31,6 +32,7 @@ let window: BrowserWindow | null = null;
 let session: Session | null = null;
 let conversation: Conversation | null = null;
 let history: HistoryStore | null = null;
+let locale: LocaleStore | null = null;
 
 /** Build the one window, hardened, and load the renderer. */
 function createWindow(): BrowserWindow {
@@ -109,6 +111,8 @@ function servicesFor(live: Session): IpcServices {
       transport: transport.kind,
       historyPersisted: history?.isAvailable() ?? false,
     }),
+    getLocale: () => locale?.load() ?? Promise.resolve(null),
+    setLocale: (chosen) => locale?.save(chosen) ?? Promise.resolve(chosen),
   };
 }
 
@@ -151,6 +155,7 @@ async function attachConversation(live: Session): Promise<void> {
 void app.whenReady().then(async () => {
   const userData = app.getPath('userData');
   history = new HistoryStore(userData, safeStorage);
+  locale = new LocaleStore(userData);
   session = new Session({
     channels: loopbackChannelFactory,
     credentials: new CredentialStore(userData, safeStorage),

@@ -15,6 +15,7 @@
  * least authority the app can function with.
  */
 
+import { coerceSupportedLocale } from '../shared/locales';
 import type { ChatMessage } from './chat/conversation';
 import type { SessionStatus } from './session';
 
@@ -34,6 +35,10 @@ export const CHANNELS = {
   chatSend: 'dig-chat:chat:send',
   /** What the app is, for the about/version surface. */
   appInfo: 'dig-chat:app:info',
+  /** The user's persisted locale choice, or `null` when they have not chosen one. */
+  localeGet: 'dig-chat:locale:get',
+  /** Persist a locale choice; the accepted (allowlisted) locale is returned. */
+  localeSet: 'dig-chat:locale:set',
 } as const;
 
 /** Events the main process pushes to the renderer. */
@@ -103,6 +108,26 @@ export function validateCode(raw: unknown): string {
   return raw;
 }
 
+/** The longest locale tag this process will look at — a canonical code is far shorter. */
+export const MAX_LOCALE_INPUT = 35;
+
+/**
+ * Validate a locale argument coming across the boundary and coerce it to a supported code.
+ *
+ * The value is untrusted (the caller might not be the UI), so a non-string is refused outright, and
+ * an over-long or unsupported string is coerced to the default locale rather than trusted — an
+ * unknown locale becomes English, never a rejection the renderer has to handle or an arbitrary value
+ * written to disk. The bound is applied BEFORE the allowlist check so a megabyte string is discarded
+ * without a set-membership walk over it.
+ *
+ * @throws {InvalidRequestError} when the argument is not a string at all.
+ */
+export function validateLocale(raw: unknown): string {
+  if (typeof raw !== 'string') throw new InvalidRequestError(CHANNELS.localeSet, 'not a string');
+  if (raw.length > MAX_LOCALE_INPUT) return coerceSupportedLocale('');
+  return coerceSupportedLocale(raw);
+}
+
 /**
  * Validate a send request.
  *
@@ -143,6 +168,10 @@ export interface IpcServices {
   history(): readonly ChatMessage[];
   send(request: SendRequest): Promise<ChatMessage>;
   info(): AppInfo;
+  /** The persisted locale, or `null` when the user has not chosen one. */
+  getLocale(): Promise<string | null>;
+  /** Persist a locale choice; resolves to the accepted (allowlisted) locale. */
+  setLocale(locale: string): Promise<string>;
 }
 
 /**
@@ -160,4 +189,6 @@ export function registerIpcHandlers(host: IpcHost, services: IpcServices): void 
   host.handle(CHANNELS.chatHistory, () => services.history());
   host.handle(CHANNELS.chatSend, (_event, request) => services.send(validateSendRequest(request)));
   host.handle(CHANNELS.appInfo, () => services.info());
+  host.handle(CHANNELS.localeGet, () => services.getLocale());
+  host.handle(CHANNELS.localeSet, (_event, locale) => services.setLocale(validateLocale(locale)));
 }
