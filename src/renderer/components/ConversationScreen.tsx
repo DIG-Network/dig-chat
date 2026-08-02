@@ -21,6 +21,10 @@ export function ConversationScreen(): JSX.Element {
   const messages = useSelector((state: RootState) => state.ui.messages);
   const busy = useSelector((state: RootState) => state.ui.busy);
   const did = useSelector((state: RootState) => state.ui.status?.did ?? null);
+  const appInfo = useSelector((state: RootState) => state.ui.appInfo);
+  // `null` means the app info has not arrived yet — only an explicit `false` is the honest "history
+  // is not being saved" fact worth a standing notice. An unknown is not rendered as that negative.
+  const historyEphemeral = appInfo !== null && !appInfo.historyPersisted;
 
   const [recipient, setRecipient] = useState(did ?? '');
   const [body, setBody] = useState('');
@@ -37,6 +41,12 @@ export function ConversationScreen(): JSX.Element {
       <h1 id="chat-heading">
         <FormattedMessage id="chat.heading" />
       </h1>
+
+      {historyEphemeral && (
+        <p className="notice" role="status" data-testid="history-ephemeral">
+          <FormattedMessage id="chat.historyEphemeral" />
+        </p>
+      )}
 
       {messages.length === 0 ? (
         <p className="empty" data-testid="chat-empty">

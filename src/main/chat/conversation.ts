@@ -38,6 +38,40 @@ export interface ChatMessage {
   readonly at: number;
 }
 
+/**
+ * The most messages dig-chat keeps, in memory and at rest.
+ *
+ * History is bounded so it cannot grow without limit across a long-lived install: a chat that ran for
+ * a year would otherwise hold every line ever exchanged in one decrypted blob. When the count is
+ * exceeded the OLDEST messages are dropped — a chat log is read newest-first, and the recent past is
+ * the part worth keeping.
+ */
+export const MAX_HISTORY_MESSAGES = 1_000;
+
+/**
+ * The most bytes the serialised history may occupy, as a second bound beneath the count.
+ *
+ * The count alone does not bound size: {@link MAX_PEER_TEXT_CHARS}-long bodies would let 1000 messages
+ * reach many megabytes. This caps the JSON the persistence layer must seal and write, evicting oldest
+ * until it fits — so neither a flood of small messages nor a few enormous ones is unbounded.
+ */
+export const MAX_HISTORY_BYTES = 1_000_000;
+
+/**
+ * Drop the oldest messages until the history is within both bounds, keeping the newest.
+ *
+ * Pure and total: given any list it returns a suffix of it that satisfies {@link MAX_HISTORY_MESSAGES}
+ * and {@link MAX_HISTORY_BYTES}. Used by the conversation to bound what it holds AND by the store to
+ * bound what it writes, so memory and disk are trimmed by the same rule rather than two that drift.
+ */
+export function boundHistory(messages: readonly ChatMessage[]): ChatMessage[] {
+  let kept = messages.slice(Math.max(0, messages.length - MAX_HISTORY_MESSAGES));
+  while (kept.length > 0 && Buffer.byteLength(JSON.stringify(kept), 'utf8') > MAX_HISTORY_BYTES) {
+    kept = kept.slice(1);
+  }
+  return kept;
+}
+
 /** Thrown when a message cannot be sent, with a reason the UI can show. */
 export class SendError extends Error {
   constructor(
@@ -57,14 +91,27 @@ export interface ConversationDependencies {
   readonly self: IdentitySummary;
   /** Unix-epoch milliseconds. Injected so ordering is pinnable in tests. */
   readonly clock: () => number;
+  /**
+   * History restored from a previous run, oldest first, or omitted when there is none (or when the
+   * machine offers no encryption backend, so nothing was persisted). It is bounded and re-sanitised
+   * on the way in, so a tampered store cannot reintroduce raw peer bytes or an unbounded log.
+   */
+  readonly initialHistory?: readonly ChatMessage[];
+  /**
+   * Called with the whole bounded history whenever it changes, so it can be sealed to disk. Omitted
+   * when persistence is unavailable — the conversation then runs in-memory only, exactly as before.
+   * Failures are the persister's to swallow: a message must still appear even if it cannot be saved.
+   */
+  readonly persist?: (messages: readonly ChatMessage[]) => void;
 }
 
 /**
  * The conversation log plus the two verbs that change it.
  *
- * Deliberately in-memory for the MVP, and the UI says so: message history is not persisted, so
- * closing dig-chat loses it. Persisting a decrypted history is a real decision about where plaintext
- * lives at rest, and it is not one to make in passing.
+ * History persists across restarts when the OS offers an encryption backend: {@link deps.persist}
+ * seals the whole bounded log through `safeStorage` (see `../storage/history`), and
+ * {@link deps.initialHistory} restores it. Where no backend exists, both are omitted and the
+ * conversation is in-memory only — dig-chat degrades rather than writing decrypted chat in the clear.
  */
 export class Conversation {
   private readonly messages: ChatMessage[] = [];
@@ -73,6 +120,17 @@ export class Conversation {
   private onChange: (() => void) | null = null;
 
   constructor(private readonly deps: ConversationDependencies) {
+    // Restored history is re-sanitised and re-bounded here, not trusted as written: the store is a
+    // file another process could edit, so its contents are peer text again on the way back in.
+    for (const restored of boundHistory(deps.initialHistory ?? [])) {
+      this.messages.push({
+        ...restored,
+        peerDid: sanitizeIdentifier(restored.peerDid),
+        body: sanitizePeerText(restored.body),
+      });
+    }
+    this.sequence = this.messages.length;
+
     this.unsubscribe = deps.transport.subscribe((envelope) => {
       void this.receive(envelope);
     });
@@ -153,6 +211,17 @@ export class Conversation {
       at: this.deps.clock(),
     };
     this.messages.push(message);
+    // Evict oldest in place so the in-memory log obeys the same bound as the persisted one, then
+    // hand the bounded result to the persister. The identity of `message` is preserved for the
+    // caller; only older entries beyond the bound are dropped.
+    if (this.messages.length > MAX_HISTORY_MESSAGES) {
+      this.messages.splice(0, this.messages.length - MAX_HISTORY_MESSAGES);
+    }
+    const bounded = boundHistory(this.messages);
+    if (bounded.length !== this.messages.length) {
+      this.messages.splice(0, this.messages.length - bounded.length);
+    }
+    this.deps.persist?.(this.history());
     this.onChange?.();
     return message;
   }
