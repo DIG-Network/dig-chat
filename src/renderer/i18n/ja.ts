@@ -95,6 +95,45 @@ export const ja: Catalog = {
     'DIG Chat はこのシステムでペアリングを安全に保存できなかったため、まったく保存しませんでした。次回はもう一度ペアリングする必要があります。',
   'error.historyStorageUnavailable':
     'DIG Chat はこのシステムでメッセージ履歴を安全に保存できなかったため、このセッションの間だけ保持します。',
+  'settings.heading': '履歴',
+  'settings.export.heading': '履歴をエクスポート',
+  'settings.export.body':
+    '会話履歴全体を暗号化ファイルに保存し、別のコンピューターに移動できます。ファイルはパスフレーズで封印されます。ファイルを開く唯一の方法なので、大切に保管してください。',
+  'settings.export.passphraseLabel': 'パスフレーズ',
+  'settings.export.confirmLabel': 'パスフレーズを再入力',
+  'settings.export.submit': 'ファイルにエクスポート',
+  'settings.export.exporting': '履歴を封印しています…',
+  'settings.export.success': '暗号化された履歴を {path} に保存しました。',
+  'settings.export.mismatch': '2つのパスフレーズが一致しません。',
+  'settings.import.heading': '履歴ファイルをインポート',
+  'settings.import.body':
+    '暗号化された履歴ファイルを開いて、この会話に統合します。すでに持っているメッセージはそのまま残ります。',
+  'settings.import.passphraseLabel': 'パスフレーズ',
+  'settings.import.submit': 'ファイルを選択してインポート',
+  'settings.import.importing': '履歴を開いています…',
+  'settings.import.success':
+    '{added, plural, other {# 件のメッセージ}}を追加しました。現在 {total, plural, other {# 件のメッセージ}}があります。',
+  'settings.retention.heading': '自動クリーンアップ',
+  'settings.retention.body':
+    '既定では DIG Chat はすべてのメッセージを保持します。これをオンにすると、指定した日数より古いメッセージを自動的に削除します。',
+  'settings.retention.enableLabel': '設定した期間より古いメッセージを削除',
+  'settings.retention.daysLabel': '保持する日数',
+  'settings.danger.heading': '履歴を削除',
+  'settings.danger.body':
+    '履歴を削除すると、このコンピューターからメッセージが削除されます。元に戻すことはできず、他の人のコンピューター上の内容は削除されません。',
+  'settings.danger.empty': '削除する会話はありません。',
+  'settings.danger.clearConversation': '{did} との会話を削除',
+  'settings.danger.clearAll': 'すべての履歴を削除',
+  'settings.danger.confirmHeading': 'この履歴を削除しますか？',
+  'settings.danger.confirmBody':
+    'これはこのコンピューターからメッセージを削除し、元に戻すことはできません。',
+  'settings.danger.confirm': '削除',
+  'settings.danger.cancel': '残す',
+  'error.archiveFormat': 'そのファイルは DIG Chat の履歴ファイルではありません。',
+  'error.archiveVersion':
+    'その履歴ファイルは新しいバージョンの DIG Chat で作成されました。更新してもう一度お試しください。',
+  'error.archiveDecrypt':
+    'そのパスフレーズではファイルを開けなかったか、ファイルが破損しています。',
   'error.emptyMessage': '送信する内容を入力してください。',
   'error.messageTooLong': 'そのメッセージは長すぎて送信できません。',
   'error.sealFailed':

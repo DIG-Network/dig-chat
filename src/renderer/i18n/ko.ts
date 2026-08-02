@@ -91,6 +91,43 @@ export const ko: Catalog = {
     'DIG Chat이 이 시스템에서 페어링을 안전하게 저장할 수 없어서 전혀 저장하지 않았습니다. 다음에 다시 페어링해야 합니다.',
   'error.historyStorageUnavailable':
     'DIG Chat이 이 시스템에서 메시지 기록을 안전하게 저장할 수 없어서 이 세션 동안만 보관합니다.',
+  'settings.heading': '기록',
+  'settings.export.heading': '기록 내보내기',
+  'settings.export.body':
+    '전체 대화 기록을 다른 컴퓨터로 옮길 수 있는 암호화된 파일로 저장하세요. 파일은 암호문구로 봉인됩니다 — 파일을 여는 유일한 방법이므로 안전하게 보관하세요.',
+  'settings.export.passphraseLabel': '암호문구',
+  'settings.export.confirmLabel': '암호문구 다시 입력',
+  'settings.export.submit': '파일로 내보내기',
+  'settings.export.exporting': '기록을 봉인하는 중…',
+  'settings.export.success': '암호화된 기록을 {path}에 저장했습니다.',
+  'settings.export.mismatch': '두 암호문구가 일치하지 않습니다.',
+  'settings.import.heading': '기록 파일 가져오기',
+  'settings.import.body':
+    '암호화된 기록 파일을 열어 이 대화에 병합합니다. 이미 가지고 있는 메시지는 그대로 유지됩니다.',
+  'settings.import.passphraseLabel': '암호문구',
+  'settings.import.submit': '파일 선택 후 가져오기',
+  'settings.import.importing': '기록을 여는 중…',
+  'settings.import.success':
+    '{added, plural, other {#개의 메시지}}를 추가했습니다. 이제 {total, plural, other {#개의 메시지}}가 있습니다.',
+  'settings.retention.heading': '자동 정리',
+  'settings.retention.body':
+    '기본적으로 DIG Chat은 모든 메시지를 보관합니다. 이 기능을 켜면 지정한 일수보다 오래된 메시지를 자동으로 삭제합니다.',
+  'settings.retention.enableLabel': '설정한 기간보다 오래된 메시지 삭제',
+  'settings.retention.daysLabel': '보관할 일수',
+  'settings.danger.heading': '기록 삭제',
+  'settings.danger.body':
+    '기록을 삭제하면 이 컴퓨터에서 메시지가 제거됩니다. 되돌릴 수 없으며, 다른 사람의 컴퓨터에 있는 내용은 삭제하지 않습니다.',
+  'settings.danger.empty': '삭제할 대화가 없습니다.',
+  'settings.danger.clearConversation': '{did}와의 대화 삭제',
+  'settings.danger.clearAll': '모든 기록 삭제',
+  'settings.danger.confirmHeading': '이 기록을 삭제할까요?',
+  'settings.danger.confirmBody': '이 작업은 이 컴퓨터에서 메시지를 제거하며 되돌릴 수 없습니다.',
+  'settings.danger.confirm': '삭제',
+  'settings.danger.cancel': '유지',
+  'error.archiveFormat': '그 파일은 DIG Chat 기록 파일이 아닙니다.',
+  'error.archiveVersion':
+    '그 기록 파일은 최신 버전의 DIG Chat으로 만들어졌습니다. 업데이트한 후 다시 시도하세요.',
+  'error.archiveDecrypt': '그 암호문구로 파일을 열지 못했거나 파일이 손상되었습니다.',
   'error.emptyMessage': '보낼 내용을 입력하세요.',
   'error.messageTooLong': '그 메시지는 너무 길어서 보낼 수 없습니다.',
   'error.sealFailed':

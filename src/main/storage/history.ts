@@ -28,9 +28,10 @@
 import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
-import type { ChatMessage, Direction } from '../chat/conversation';
+import type { ChatMessage } from '../chat/conversation';
 import { boundHistory } from '../chat/conversation';
 import { sanitizeIdentifier, sanitizePeerText } from '../chat/peer-text';
+import { isStoredMessage } from '../chat/stored-message';
 import type { SecretSealer } from './credentials';
 
 /** The file name inside the app's userData directory. */
@@ -41,9 +42,6 @@ interface StoredHistory {
   v: 1;
   messages: ChatMessage[];
 }
-
-/** The two directions a stored message may carry, so an unknown value is rejected on load. */
-const DIRECTIONS: readonly Direction[] = ['sent', 'received'];
 
 /**
  * Reads and writes the sealed message history.
@@ -128,6 +126,20 @@ export class HistoryStore {
     await rm(this.path, { force: true });
     await rm(`${this.path}.tmp`, { force: true });
   }
+
+  /**
+   * Forget one peer's messages, leaving every other conversation intact.
+   *
+   * The argument is sanitised before matching, exactly as stored DIDs are, so a caller passing a DID
+   * with stray bytes still matches the neutralised form on disk rather than silently matching nothing.
+   * When the peer has no messages this rewrites the file unchanged — a harmless no-op, and simpler than
+   * a "did anything change" pre-check the caller would have to trust.
+   */
+  async clearConversation(peerDid: string): Promise<void> {
+    const target = sanitizeIdentifier(peerDid);
+    const remaining = (await this.load()).filter((message) => message.peerDid !== target);
+    await this.save(remaining);
+  }
 }
 
 /** Thrown when history cannot be stored safely. Storing it UNSAFELY is not the alternative. */
@@ -138,18 +150,4 @@ export class HistoryStorageUnavailableError extends Error {
     super('this system offers no OS-backed encryption for storing message history');
     this.name = 'HistoryStorageUnavailableError';
   }
-}
-
-/** Whether a decoded entry has the exact shape of a stored message, so a tampered one is dropped. */
-function isStoredMessage(value: unknown): value is ChatMessage {
-  if (typeof value !== 'object' || value === null) return false;
-  const { id, direction, peerDid, body, at } = value as Record<string, unknown>;
-  return (
-    typeof id === 'string' &&
-    typeof direction === 'string' &&
-    DIRECTIONS.includes(direction as Direction) &&
-    typeof peerDid === 'string' &&
-    typeof body === 'string' &&
-    typeof at === 'number'
-  );
 }

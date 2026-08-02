@@ -26,7 +26,7 @@ import { DEFAULT_LOCALE, resolveInitialLocale } from '../shared/locales';
 import { digChat } from './bridge';
 
 /** What the UI is doing right now, as opposed to what the SESSION is. */
-export type Busy = 'idle' | 'pairing' | 'refreshing' | 'sending';
+export type Busy = 'idle' | 'pairing' | 'refreshing' | 'sending' | 'exporting' | 'importing';
 
 export interface UiState {
   /** The session as the main process reports it, or `null` before the first report. */
@@ -38,6 +38,8 @@ export interface UiState {
   errorId: string | null;
   /** The active UI locale — a supported BCP-47 code. Defaults to English until resolved. */
   locale: string;
+  /** The retention window in days as the main process reports it; 0 means retention is disabled. */
+  retentionDays: number;
 }
 
 const initialState: UiState = {
@@ -47,6 +49,7 @@ const initialState: UiState = {
   busy: 'idle',
   errorId: null,
   locale: DEFAULT_LOCALE,
+  retentionDays: 0,
 };
 
 /**
@@ -116,6 +119,69 @@ export const sendMessage = createAsyncThunk(
   },
 );
 
+/**
+ * Export the whole history to a passphrase-sealed archive.
+ *
+ * The passphrase is the only secret that crosses to the main process; the archive bytes and the file
+ * path never come back to the renderer, only whether a file was written and where. A failure maps
+ * through {@link messageIdOf}, so a storage-unavailable or IO error surfaces as a dismissible banner.
+ */
+export const exportHistory = createAsyncThunk(
+  'ui/exportHistory',
+  async (passphrase: string, { rejectWithValue }) => {
+    try {
+      return await digChat().exportHistory(passphrase);
+    } catch (failure) {
+      return rejectWithValue(messageIdOf(failure));
+    }
+  },
+);
+
+/**
+ * Import a passphrase-sealed archive and merge it into the current history.
+ *
+ * On success the messages are refreshed from the main process (the merge happened there), so the log
+ * the user sees is the merged result, not a client-side guess. A wrong passphrase, a corrupt file, or
+ * an unsupported version each rejects with its own `error.archive*` id for a specific message.
+ */
+export const importHistory = createAsyncThunk(
+  'ui/importHistory',
+  async (passphrase: string, { rejectWithValue }) => {
+    try {
+      const result = await digChat().importHistory(passphrase);
+      return { result, messages: await digChat().getHistory() };
+    } catch (failure) {
+      return rejectWithValue(messageIdOf(failure));
+    }
+  },
+);
+
+/** Load the persisted retention window (0 = disabled). */
+export const loadRetention = createAsyncThunk('ui/loadRetention', () => digChat().getRetention());
+
+/**
+ * Change the retention window and persist it. The main process clamps to the allowed range and returns
+ * the value that actually took effect, so the store adopts that rather than the raw request.
+ */
+export const changeRetention = createAsyncThunk('ui/changeRetention', (days: number) =>
+  digChat().setRetention(days),
+);
+
+/** Forget one peer's messages, then refresh the log from the main process. */
+export const clearConversation = createAsyncThunk(
+  'ui/clearConversation',
+  async (peerDid: string) => {
+    await digChat().clearConversation(peerDid);
+    return digChat().getHistory();
+  },
+);
+
+/** Forget the whole history, then refresh the log from the main process. */
+export const clearAllHistory = createAsyncThunk('ui/clearAllHistory', async () => {
+  await digChat().clearAllHistory();
+  return digChat().getHistory();
+});
+
 const slice = createSlice({
   name: 'ui',
   initialState,
@@ -184,6 +250,41 @@ const slice = createSlice({
       .addCase(sendMessage.rejected, (state, action) => {
         state.busy = 'idle';
         state.errorId = (action.payload as string | undefined) ?? 'error.unknown';
+      })
+      .addCase(exportHistory.pending, (state) => {
+        state.busy = 'exporting';
+        state.errorId = null;
+      })
+      .addCase(exportHistory.fulfilled, (state) => {
+        state.busy = 'idle';
+      })
+      .addCase(exportHistory.rejected, (state, action) => {
+        state.busy = 'idle';
+        state.errorId = (action.payload as string | undefined) ?? 'error.unknown';
+      })
+      .addCase(importHistory.pending, (state) => {
+        state.busy = 'importing';
+        state.errorId = null;
+      })
+      .addCase(importHistory.fulfilled, (state, action) => {
+        state.busy = 'idle';
+        state.messages = action.payload.messages;
+      })
+      .addCase(importHistory.rejected, (state, action) => {
+        state.busy = 'idle';
+        state.errorId = (action.payload as string | undefined) ?? 'error.unknown';
+      })
+      .addCase(loadRetention.fulfilled, (state, action) => {
+        state.retentionDays = action.payload;
+      })
+      .addCase(changeRetention.fulfilled, (state, action) => {
+        state.retentionDays = action.payload;
+      })
+      .addCase(clearConversation.fulfilled, (state, action) => {
+        state.messages = action.payload;
+      })
+      .addCase(clearAllHistory.fulfilled, (state, action) => {
+        state.messages = action.payload;
       });
   },
 });

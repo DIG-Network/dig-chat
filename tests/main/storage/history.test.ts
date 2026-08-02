@@ -186,3 +186,34 @@ describe('history at rest', () => {
     await store.clear(); // clearing what is already gone is a success
   });
 });
+
+describe('clearConversation', () => {
+  it('removes only the messages of the named peer, keeping the rest', async () => {
+    const store = new HistoryStore(directory, xorSealer());
+    await store.save([
+      message({ id: 'a', peerDid: 'did:chia:bob' }),
+      message({ id: 'b', peerDid: 'did:chia:alice' }),
+      message({ id: 'c', peerDid: 'did:chia:bob' }),
+    ]);
+
+    await store.clearConversation('did:chia:bob');
+
+    const remaining = await store.load();
+    expect(remaining.map((m) => m.id)).toEqual(['b']);
+  });
+
+  it('matches on the sanitised form of the argument, not the raw bytes', async () => {
+    const store = new HistoryStore(directory, xorSealer());
+    await store.save([message({ id: 'a', peerDid: 'did:chia:bob' })]);
+    // A caller passing a DID with a stray control byte still clears the stored (sanitised) peer.
+    await store.clearConversation('did:chia:bob\n');
+    expect(await store.load()).toEqual([]);
+  });
+
+  it('is a no-op for a peer with no messages', async () => {
+    const store = new HistoryStore(directory, xorSealer());
+    await store.save([message({ id: 'a', peerDid: 'did:chia:bob' })]);
+    await store.clearConversation('did:chia:nobody');
+    expect((await store.load()).map((m) => m.id)).toEqual(['a']);
+  });
+});

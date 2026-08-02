@@ -92,6 +92,43 @@ export const tr: Catalog = {
     'DIG Chat, eşleştirmeyi bu sistemde güvenli biçimde saklayamadı, bu yüzden hiç saklamadı. Bir dahaki sefere yeniden eşleştirmeniz gerekecek.',
   'error.historyStorageUnavailable':
     'DIG Chat, mesaj geçmişinizi bu sistemde güvenli biçimde saklayamadı, bu yüzden yalnızca bu oturum için tutuyor.',
+  'settings.heading': 'Geçmiş',
+  'settings.export.heading': 'Geçmişinizi dışa aktarın',
+  'settings.export.body':
+    'Tüm konuşma geçmişinizi başka bir bilgisayara taşıyabileceğiniz şifreli bir dosyaya kaydedin. Dosya bir parola cümlesiyle mühürlenir — güvende tutun, çünkü dosyayı açmanın tek yolu budur.',
+  'settings.export.passphraseLabel': 'Parola cümlesi',
+  'settings.export.confirmLabel': 'Parola cümlesini tekrarlayın',
+  'settings.export.submit': 'Bir dosyaya aktar',
+  'settings.export.exporting': 'Geçmişiniz mühürleniyor…',
+  'settings.export.success': 'Şifreli geçmişiniz {path} konumuna kaydedildi.',
+  'settings.export.mismatch': 'İki parola cümlesi eşleşmiyor.',
+  'settings.import.heading': 'Bir geçmiş dosyası içe aktar',
+  'settings.import.body':
+    'Şifreli bir geçmiş dosyası açın ve bu konuşmayla birleştirin. Zaten sahip olduğunuz mesajlar olduğu gibi bırakılır.',
+  'settings.import.passphraseLabel': 'Parola cümlesi',
+  'settings.import.submit': 'Dosya seç ve içe aktar',
+  'settings.import.importing': 'Geçmişiniz açılıyor…',
+  'settings.import.success':
+    '{added, plural, other {# mesaj}} eklendi. Artık {total, plural, other {# mesajınız}} var.',
+  'settings.retention.heading': 'Otomatik temizlik',
+  'settings.retention.body':
+    'DIG Chat varsayılan olarak her mesajı saklar. Belirli bir gün sayısından eski mesajları otomatik olarak unutmak için bunu açın.',
+  'settings.retention.enableLabel': 'Belirlenen yaştan eski mesajları sil',
+  'settings.retention.daysLabel': 'Saklanacak gün',
+  'settings.danger.heading': 'Geçmişi sil',
+  'settings.danger.body':
+    'Geçmişi silmek mesajları bu bilgisayardan kaldırır. Geri alınamaz ve başkasının bilgisayarındaki hiçbir şeyi silmez.',
+  'settings.danger.empty': 'Silinecek konuşma yok.',
+  'settings.danger.clearConversation': '{did} ile konuşmayı sil',
+  'settings.danger.clearAll': 'Tüm geçmişi sil',
+  'settings.danger.confirmHeading': 'Bu geçmiş silinsin mi?',
+  'settings.danger.confirmBody': 'Bu, mesajları bu bilgisayardan kaldırır ve geri alınamaz.',
+  'settings.danger.confirm': 'Sil',
+  'settings.danger.cancel': 'Kalsın',
+  'error.archiveFormat': 'Bu dosya bir DIG Chat geçmiş dosyası değil.',
+  'error.archiveVersion':
+    "Bu geçmiş dosyası DIG Chat'in daha yeni bir sürümüyle oluşturuldu. Güncelleyip tekrar deneyin.",
+  'error.archiveDecrypt': 'Bu parola cümlesi dosyayı açmadı ya da dosya bozuk.',
   'error.emptyMessage': 'Göndermek için bir şeyler yazın.',
   'error.messageTooLong': 'Bu mesaj göndermek için çok uzun.',
   'error.sealFailed': 'DIG Chat göndermeyi reddetti: DIG App mühürlü bir mesaj döndürmedi.',

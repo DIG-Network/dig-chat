@@ -93,6 +93,44 @@ export const id: Catalog = {
     'DIG Chat tidak dapat menyimpan pemasangan dengan aman di sistem ini, jadi ia tidak menyimpannya sama sekali. Anda perlu memasangkan lagi lain kali.',
   'error.historyStorageUnavailable':
     'DIG Chat tidak dapat menyimpan riwayat pesan Anda dengan aman di sistem ini, jadi ia menyimpannya hanya untuk sesi ini.',
+  'settings.heading': 'Riwayat',
+  'settings.export.heading': 'Ekspor riwayat Anda',
+  'settings.export.body':
+    'Simpan seluruh riwayat percakapan Anda ke berkas terenkripsi yang dapat Anda pindahkan ke komputer lain. Berkas disegel dengan frasa sandi — simpan dengan aman, karena itulah satu-satunya cara membuka berkas.',
+  'settings.export.passphraseLabel': 'Frasa sandi',
+  'settings.export.confirmLabel': 'Ulangi frasa sandi',
+  'settings.export.submit': 'Ekspor ke berkas',
+  'settings.export.exporting': 'Menyegel riwayat Anda…',
+  'settings.export.success': 'Riwayat terenkripsi Anda disimpan ke {path}.',
+  'settings.export.mismatch': 'Kedua frasa sandi tidak cocok.',
+  'settings.import.heading': 'Impor berkas riwayat',
+  'settings.import.body':
+    'Buka berkas riwayat terenkripsi dan gabungkan ke percakapan ini. Pesan yang sudah Anda miliki dibiarkan apa adanya.',
+  'settings.import.passphraseLabel': 'Frasa sandi',
+  'settings.import.submit': 'Pilih berkas dan impor',
+  'settings.import.importing': 'Membuka riwayat Anda…',
+  'settings.import.success':
+    'Menambahkan {added, plural, other {# pesan}}. Sekarang Anda memiliki {total, plural, other {# pesan}}.',
+  'settings.retention.heading': 'Pembersihan otomatis',
+  'settings.retention.body':
+    'Secara bawaan DIG Chat menyimpan setiap pesan. Aktifkan ini untuk secara otomatis melupakan pesan yang lebih lama dari sejumlah hari.',
+  'settings.retention.enableLabel': 'Hapus pesan yang lebih lama dari usia yang ditetapkan',
+  'settings.retention.daysLabel': 'Hari untuk disimpan',
+  'settings.danger.heading': 'Hapus riwayat',
+  'settings.danger.body':
+    'Menghapus riwayat menghilangkan pesan dari komputer ini. Tindakan ini tidak dapat dibatalkan, dan tidak menghapus apa pun di komputer orang lain.',
+  'settings.danger.empty': 'Tidak ada percakapan untuk dihapus.',
+  'settings.danger.clearConversation': 'Hapus percakapan dengan {did}',
+  'settings.danger.clearAll': 'Hapus semua riwayat',
+  'settings.danger.confirmHeading': 'Hapus riwayat ini?',
+  'settings.danger.confirmBody':
+    'Ini menghilangkan pesan dari komputer ini dan tidak dapat dibatalkan.',
+  'settings.danger.confirm': 'Hapus',
+  'settings.danger.cancel': 'Simpan saja',
+  'error.archiveFormat': 'Berkas itu bukan berkas riwayat DIG Chat.',
+  'error.archiveVersion':
+    'Berkas riwayat itu dibuat oleh versi DIG Chat yang lebih baru. Perbarui dan coba lagi.',
+  'error.archiveDecrypt': 'Frasa sandi itu tidak membuka berkas, atau berkas rusak.',
   'error.emptyMessage': 'Ketik sesuatu untuk dikirim.',
   'error.messageTooLong': 'Pesan itu terlalu panjang untuk dikirim.',
   'error.sealFailed': 'DIG Chat menolak mengirim: DIG App tidak mengembalikan pesan yang tersegel.',

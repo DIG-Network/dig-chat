@@ -94,6 +94,44 @@ export const ru: Catalog = {
     'DIG Chat не смог безопасно сохранить сопряжение в этой системе, поэтому не сохранил его вовсе. В следующий раз вам придётся связать заново.',
   'error.historyStorageUnavailable':
     'DIG Chat не смог безопасно сохранить историю сообщений в этой системе, поэтому хранит её только для этого сеанса.',
+  'settings.heading': 'История',
+  'settings.export.heading': 'Экспортировать историю',
+  'settings.export.body':
+    'Сохраните всю историю переписки в зашифрованный файл, который можно перенести на другой компьютер. Файл запечатан парольной фразой — храните её в надёжном месте, ведь это единственный способ открыть файл.',
+  'settings.export.passphraseLabel': 'Парольная фраза',
+  'settings.export.confirmLabel': 'Повторите парольную фразу',
+  'settings.export.submit': 'Экспортировать в файл',
+  'settings.export.exporting': 'Запечатываем вашу историю…',
+  'settings.export.success': 'Ваша зашифрованная история сохранена в {path}.',
+  'settings.export.mismatch': 'Две парольные фразы не совпадают.',
+  'settings.import.heading': 'Импортировать файл истории',
+  'settings.import.body':
+    'Откройте зашифрованный файл истории и объедините его с этой перепиской. Сообщения, которые у вас уже есть, остаются без изменений.',
+  'settings.import.passphraseLabel': 'Парольная фраза',
+  'settings.import.submit': 'Выбрать файл и импортировать',
+  'settings.import.importing': 'Открываем вашу историю…',
+  'settings.import.success':
+    'Добавлено {added, plural, other {# сообщений}}. Теперь у вас {total, plural, other {# сообщений}}.',
+  'settings.retention.heading': 'Автоматическая очистка',
+  'settings.retention.body':
+    'По умолчанию DIG Chat хранит каждое сообщение. Включите это, чтобы автоматически забывать сообщения старше указанного числа дней.',
+  'settings.retention.enableLabel': 'Удалять сообщения старше заданного возраста',
+  'settings.retention.daysLabel': 'Дней хранить',
+  'settings.danger.heading': 'Удалить историю',
+  'settings.danger.body':
+    'Удаление истории убирает сообщения с этого компьютера. Это нельзя отменить, и это ничего не удаляет на компьютере другого человека.',
+  'settings.danger.empty': 'Нет переписок для удаления.',
+  'settings.danger.clearConversation': 'Удалить переписку с {did}',
+  'settings.danger.clearAll': 'Удалить всю историю',
+  'settings.danger.confirmHeading': 'Удалить эту историю?',
+  'settings.danger.confirmBody':
+    'Это убирает сообщения с этого компьютера и не может быть отменено.',
+  'settings.danger.confirm': 'Удалить',
+  'settings.danger.cancel': 'Оставить',
+  'error.archiveFormat': 'Этот файл не является файлом истории DIG Chat.',
+  'error.archiveVersion':
+    'Этот файл истории создан более новой версией DIG Chat. Обновите и попробуйте снова.',
+  'error.archiveDecrypt': 'Эта парольная фраза не открыла файл, или файл повреждён.',
   'error.emptyMessage': 'Введите что-нибудь для отправки.',
   'error.messageTooLong': 'Это сообщение слишком длинное для отправки.',
   'error.sealFailed': 'DIG Chat отказался отправлять: DIG App не вернул запечатанное сообщение.',

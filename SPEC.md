@@ -365,6 +365,8 @@ sanitisation again, so a tampered store cannot reintroduce raw peer bytes or an 
 Forgetting the pairing clears the stored history: the credential that justified storing decrypted chat
 is gone, so the history does not outlive it.
 
+The user MAY additionally export a portable copy of history (§5.7) and control retention (§5.8).
+
 ### 5.5 Peer text
 
 A DID, a display name and a message body are chosen by a peer. All of them pass through one
@@ -401,6 +403,66 @@ es, pt-BR, fr, de, tr, vi, id, hi**. English is the default and the fallback.
   which do not widen the preload surface beyond a single get/set pair. `locale:set` validates its
   argument as untrusted input (§5.3): a non-string is refused; an unsupported or over-long string is
   coerced to the default rather than trusted.
+
+### 5.7 History archive (export / import)
+
+The user can export message history to a single portable, passphrase-sealed file and import it on
+another machine. Unlike the at-rest history store (§5.4), which seals to THIS OS user through the OS
+keystore, the archive is sealed to a PASSPHRASE — device-independent, so any conforming tool can open
+it with the passphrase, and none without. This is orthogonal to NC-2 (keypair-sealed at rest): the
+archive is derived from something the user KNOWS, not from the identity keypair.
+
+**Container `DIGCHAT-ARCHIVE`, version 1.** A single JSON file with base64 fields:
+
+```
+{ "magic":"DIGCHAT-ARCHIVE", "v":1,
+  "kdf":{"algo":"argon2id","m":65536,"t":3,"p":1,"saltB64":"<16 bytes>"},
+  "cipher":"AES-256-GCM", "nonceB64":"<12 bytes>", "ctB64":"<base64(ciphertext || 16-byte GCM tag)>" }
+```
+
+- **Key derivation** is Argon2id over the UTF-8 passphrase and the 16-byte salt, parameters
+  `m = 65536` KiB (64 MiB), `t = 3`, `p = 1`, producing a 32-byte key. A fresh salt and nonce are
+  drawn per export.
+- **Encryption** is AES-256-GCM with a 12-byte nonce and 16-byte tag.
+- **The GCM AAD is the canonical JSON of the header WITHOUT `ctB64`** — the keys `magic`, `v`, `kdf`,
+  `cipher`, `nonceB64` in exactly that order. This binds magic, version, KDF parameters, salt and
+  nonce to the ciphertext, so a swapped version, a downgraded parameter, or a reused nonce fails the
+  authentication tag rather than silently taking effect.
+- **The plaintext** is UTF-8 `JSON.stringify({ v: 1, messages })`, the same `ChatMessage` list §5.4
+  stores.
+- **Decode is fail-closed and total**, in order: parse JSON and check the magic (else a format error);
+  check `v === 1` (else an unsupported-version error); derive the key and open the AEAD (any
+  authentication failure is a single decrypt error). Only then is the payload parsed. **A wrong
+  passphrase and a corrupt/tampered file are INDISTINGUISHABLE** — one authentication failure, so the
+  archive is no oracle for guessing the passphrase. Any failure throws and the caller imports nothing;
+  there is never a partial import.
+- **Imported peer text is re-sanitised** through §5.5 on the way in, because an archive is an
+  untrusted file exactly as the on-disk store is.
+- **Import merges** into the current history: messages are deduplicated by `id` (the existing copy
+  wins, so re-importing is idempotent), the union is re-sanitised, sorted by `(at ascending, then id
+lexicographic)`, and re-bounded by the §5.4 limits.
+
+The three failure classes surface to the user as distinct messages: not-an-archive, unsupported
+version, and wrong-passphrase-or-damaged. The main process owns the file dialogs, the encryption, and
+the `0600` write; the renderer supplies only the passphrase and never sees the archive bytes or the
+file path until after a successful write.
+
+### 5.8 Retention
+
+Retention is **off by default** — history is kept indefinitely. The user MAY set a maximum age in
+days; messages older than that are forgotten. The window is stored as a plain-JSON preference under
+`userData` (a retention setting is not a secret, so it is NOT sealed like the credential/history), is
+validated as untrusted on load (a non-number, out-of-range or malformed value coerces to `0` =
+disabled), and is clamped to `[0, 3650]` days on save.
+
+The sweep runs at two moments: **on load** (freshly-loaded history is pruned before the conversation
+is built, so an app opened after a long gap forgets aged messages immediately) and **periodically**
+while the app is open. When a sweep drops anything it persists the pruned history and pushes the
+change to the renderer. Age is measured against an injectable clock so the behaviour is testable.
+
+The user can also delete history directly: **per conversation** (forget one peer's messages) or **all
+history at once**. Every destructive action is confirmed before it acts and every confirmation is
+dismissible (Cancel, Escape, backdrop) — the user is never trapped.
 
 ---
 

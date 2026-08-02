@@ -3,7 +3,8 @@
  *
  * # What is exposed, and what deliberately is not
  *
- * Nine functions and two subscriptions. No `ipcRenderer`, no `invoke(channel, …)`, no `require`, no
+ * A small, fixed set of named functions plus two subscriptions. No `ipcRenderer`, no
+ * `invoke(channel, …)`, no `require`, no
  * `process` — because a bridge that exposes a general "send on this channel" function has exposed
  * every channel there will ever be, including the ones added by someone who never read this file.
  *
@@ -17,7 +18,14 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
-import { CHANNELS, EVENTS, type AppInfo, type SendRequest } from '../main/ipc';
+import {
+  CHANNELS,
+  EVENTS,
+  type AppInfo,
+  type ExportResult,
+  type ImportResult,
+  type SendRequest,
+} from '../main/ipc';
 import type { ChatMessage } from '../main/chat/conversation';
 import type { SessionStatus } from '../main/session';
 
@@ -41,6 +49,18 @@ export interface DigChatApi {
   getLocale(): Promise<string | null>;
   /** Persist a locale choice; resolves to the accepted (allowlisted) locale. */
   setLocale(locale: string): Promise<string>;
+  /** Seal the whole history to a passphrase archive at a location the user chooses. */
+  exportHistory(passphrase: string): Promise<ExportResult>;
+  /** Open a passphrase archive the user chooses and merge it into the current history. */
+  importHistory(passphrase: string): Promise<ImportResult>;
+  /** The persisted retention window in days (0 = disabled). */
+  getRetention(): Promise<number>;
+  /** Persist a retention window; resolves to the accepted, clamped value. */
+  setRetention(days: number): Promise<number>;
+  /** Forget one peer's messages. */
+  clearConversation(peerDid: string): Promise<void>;
+  /** Forget the whole history. */
+  clearAllHistory(): Promise<void>;
   /** Subscribe to session changes; returns an unsubscribe function. */
   onSessionChanged(listener: (status: SessionStatus) => void): () => void;
   /** Subscribe to conversation changes; returns an unsubscribe function. */
@@ -57,6 +77,15 @@ const api: DigChatApi = {
   getAppInfo: () => ipcRenderer.invoke(CHANNELS.appInfo) as Promise<AppInfo>,
   getLocale: () => ipcRenderer.invoke(CHANNELS.localeGet) as Promise<string | null>,
   setLocale: (locale) => ipcRenderer.invoke(CHANNELS.localeSet, locale) as Promise<string>,
+  exportHistory: (passphrase) =>
+    ipcRenderer.invoke(CHANNELS.historyExport, passphrase) as Promise<ExportResult>,
+  importHistory: (passphrase) =>
+    ipcRenderer.invoke(CHANNELS.historyImport, passphrase) as Promise<ImportResult>,
+  getRetention: () => ipcRenderer.invoke(CHANNELS.retentionGet) as Promise<number>,
+  setRetention: (days) => ipcRenderer.invoke(CHANNELS.retentionSet, days) as Promise<number>,
+  clearConversation: (peerDid) =>
+    ipcRenderer.invoke(CHANNELS.historyClearConversation, peerDid) as Promise<void>,
+  clearAllHistory: () => ipcRenderer.invoke(CHANNELS.historyClearAll) as Promise<void>,
 
   onSessionChanged: (listener) => subscribe(EVENTS.sessionChanged, listener),
   onChatChanged: (listener) => subscribe(EVENTS.chatChanged, listener),

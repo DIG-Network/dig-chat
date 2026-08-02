@@ -39,6 +39,18 @@ export const CHANNELS = {
   localeGet: 'dig-chat:locale:get',
   /** Persist a locale choice; the accepted (allowlisted) locale is returned. */
   localeSet: 'dig-chat:locale:set',
+  /** Export the whole history to a passphrase-sealed archive the user picks a location for. */
+  historyExport: 'dig-chat:history:export',
+  /** Import a passphrase-sealed archive the user picks, merging it into the current history. */
+  historyImport: 'dig-chat:history:import',
+  /** The retention window in days, or 0 when retention is disabled. */
+  retentionGet: 'dig-chat:retention:get',
+  /** Set the retention window in days (0 disables it); the accepted, clamped value is returned. */
+  retentionSet: 'dig-chat:retention:set',
+  /** Forget one peer's messages. */
+  historyClearConversation: 'dig-chat:history:clearConversation',
+  /** Forget the whole history. */
+  historyClearAll: 'dig-chat:history:clearAll',
 } as const;
 
 /** Events the main process pushes to the renderer. */
@@ -53,6 +65,18 @@ export const EVENTS = {
 export interface SendRequest {
   readonly recipientDid: string;
   readonly body: string;
+}
+
+/** The outcome of an export: whether a file was written, and where (absent when the user cancelled). */
+export interface ExportResult {
+  readonly saved: boolean;
+  readonly path?: string;
+}
+
+/** The outcome of an import: how many messages were newly added, and the resulting total. */
+export interface ImportResult {
+  readonly added: number;
+  readonly total: number;
 }
 
 /** Static facts about this build, for the version surface (§6.7). */
@@ -129,6 +153,62 @@ export function validateLocale(raw: unknown): string {
 }
 
 /**
+ * The longest passphrase this process will look at.
+ *
+ * A generous bound — a passphrase is a human-chosen secret, not a paste of arbitrary data — that still
+ * stops a caller turning the KDF into a memory-amplification primitive by feeding it a megabyte.
+ */
+export const MAX_PASSPHRASE_INPUT = 1_024;
+
+/**
+ * Validate a passphrase argument.
+ *
+ * The passphrase is the ONE secret the renderer legitimately supplies (the export/import verbs), so it
+ * is checked for type and bound but never logged or echoed. An empty passphrase is refused: sealing an
+ * archive under nothing is a footgun, not a feature.
+ *
+ * @throws {InvalidRequestError} when it is not a bounded, non-empty string.
+ */
+export function validatePassphrase(raw: unknown): string {
+  if (typeof raw !== 'string')
+    throw new InvalidRequestError(CHANNELS.historyExport, 'not a string');
+  if (raw.length === 0) throw new InvalidRequestError(CHANNELS.historyExport, 'empty');
+  if (raw.length > MAX_PASSPHRASE_INPUT) {
+    throw new InvalidRequestError(CHANNELS.historyExport, 'longer than a passphrase can be');
+  }
+  return raw;
+}
+
+/**
+ * Validate a retention-days argument, coercing anything out of shape to 0 (disabled).
+ *
+ * A retention window is a setting, not a command: an out-of-range, non-integer or non-number value
+ * degrades to "keep everything" rather than a rejection the renderer has to handle. That direction is
+ * deliberate — a bad value can only ever retain MORE than the user asked, never evict more. The store
+ * clamps again on the way to disk; this is the boundary coercion so the service never sees junk.
+ */
+export function validateRetentionDays(raw: unknown): number {
+  if (typeof raw !== 'number' || !Number.isFinite(raw) || raw <= 0) return 0;
+  return Math.trunc(raw);
+}
+
+/**
+ * Validate a peer-DID argument for the clear-conversation verb.
+ *
+ * @throws {InvalidRequestError} when it is not a bounded string. (An empty string is allowed through
+ * to the store, which sanitises and matches it — clearing "no such peer" is a harmless no-op.)
+ */
+export function validatePeerDid(raw: unknown): string {
+  if (typeof raw !== 'string') {
+    throw new InvalidRequestError(CHANNELS.historyClearConversation, 'not a string');
+  }
+  if (raw.length > MAX_DID_INPUT) {
+    throw new InvalidRequestError(CHANNELS.historyClearConversation, 'too long to be a DID');
+  }
+  return raw;
+}
+
+/**
  * Validate a send request.
  *
  * Every field is checked for type AND bound. An unbounded string across an IPC boundary is a memory
@@ -172,6 +252,18 @@ export interface IpcServices {
   getLocale(): Promise<string | null>;
   /** Persist a locale choice; resolves to the accepted (allowlisted) locale. */
   setLocale(locale: string): Promise<string>;
+  /** Seal the whole history to a passphrase archive at a location the user chooses. */
+  exportHistory(passphrase: string): Promise<ExportResult>;
+  /** Open a passphrase archive the user chooses and merge it into the current history. */
+  importHistory(passphrase: string): Promise<ImportResult>;
+  /** The persisted retention window in days (0 = disabled). */
+  getRetention(): Promise<number>;
+  /** Persist a retention window; resolves to the accepted, clamped value. */
+  setRetention(days: number): Promise<number>;
+  /** Forget one peer's messages. */
+  clearConversation(peerDid: string): Promise<void>;
+  /** Forget the whole history. */
+  clearAllHistory(): Promise<void>;
 }
 
 /**
@@ -191,4 +283,18 @@ export function registerIpcHandlers(host: IpcHost, services: IpcServices): void 
   host.handle(CHANNELS.appInfo, () => services.info());
   host.handle(CHANNELS.localeGet, () => services.getLocale());
   host.handle(CHANNELS.localeSet, (_event, locale) => services.setLocale(validateLocale(locale)));
+  host.handle(CHANNELS.historyExport, (_event, phrase) =>
+    services.exportHistory(validatePassphrase(phrase)),
+  );
+  host.handle(CHANNELS.historyImport, (_event, phrase) =>
+    services.importHistory(validatePassphrase(phrase)),
+  );
+  host.handle(CHANNELS.retentionGet, () => services.getRetention());
+  host.handle(CHANNELS.retentionSet, (_event, days) =>
+    services.setRetention(validateRetentionDays(days)),
+  );
+  host.handle(CHANNELS.historyClearConversation, (_event, did) =>
+    services.clearConversation(validatePeerDid(did)),
+  );
+  host.handle(CHANNELS.historyClearAll, () => services.clearAllHistory());
 }
