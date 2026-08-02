@@ -9,6 +9,7 @@ import {
   chatChanged,
   errorDismissed,
   forgetPairing,
+  initLocale,
   loadSession,
   refreshSession,
   sessionChanged,
@@ -16,6 +17,7 @@ import {
   type RootState,
 } from '../store';
 import { ConversationScreen } from './ConversationScreen';
+import { LocaleSelector } from './LocaleSelector';
 import { PairingScreen } from './PairingScreen';
 
 /**
@@ -38,6 +40,7 @@ export function App(): JSX.Element {
   const appInfo = useSelector((state: RootState) => state.ui.appInfo);
 
   useEffect(() => {
+    void dispatch(initLocale());
     void dispatch(loadSession());
     const stopSession = digChat().onSessionChanged((next) => dispatch(sessionChanged(next)));
     const stopChat = digChat().onChatChanged((messages) => dispatch(chatChanged(messages)));
@@ -54,6 +57,10 @@ export function App(): JSX.Element {
 
   return (
     <div className="app">
+      <header className="app__header">
+        <LocaleSelector />
+      </header>
+
       {appInfo && !appInfo.reachesOtherMachines ? (
         <aside className="notice" role="note" data-testid="transport-notice">
           <h2>

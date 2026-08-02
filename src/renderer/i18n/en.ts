@@ -13,6 +13,8 @@ export const en = {
   'app.tagline': 'Private messages, signed by your DIG identity.',
   'app.version': 'Version {version}',
 
+  'locale.label': 'Language',
+
   'state.checking.heading': 'Looking for your DIG App…',
   'state.checking.body':
     'DIG Chat is checking whether it is paired and whether the DIG App is running.',
@@ -104,13 +106,12 @@ export const en = {
   'error.unknown': 'Something went wrong. Try again.',
 } as const;
 
-/** The message ids the app knows. */
+/** The message ids the app knows. `en` is the base every other locale is type-checked against. */
 export type MessageId = keyof typeof en;
 
-/** The catalogue, keyed by locale. One entry today; the shape is what lets there be more. */
-export const catalogues: Record<string, Record<string, string>> = { en };
-
-/** The locale to use, falling back to English for anything not translated yet. */
-export function messagesFor(locale: string): Record<string, string> {
-  return catalogues[locale.split('-')[0] ?? 'en'] ?? en;
-}
+/**
+ * A complete catalog: every {@link MessageId}, no more and no fewer. Typing each locale file as this
+ * turns "a locale is missing a string" and "a locale has a stray key" into COMPILE errors — the
+ * completeness gate (§6.6) enforced by the type system, before the runtime test ever runs.
+ */
+export type Catalog = Record<MessageId, string>;

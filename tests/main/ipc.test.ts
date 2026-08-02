@@ -7,7 +7,9 @@ import {
   MAX_CODE_INPUT,
   MAX_DID_INPUT,
   registerIpcHandlers,
+  MAX_LOCALE_INPUT,
   validateCode,
+  validateLocale,
   validateSendRequest,
   type IpcHost,
   type IpcServices,
@@ -46,6 +48,8 @@ function services(): IpcServices {
       transport: 'loopback',
       historyPersisted: true,
     })),
+    getLocale: vi.fn(async () => null),
+    setLocale: vi.fn(async (locale: string) => locale),
   };
 }
 
@@ -93,6 +97,17 @@ describe('every payload is validated as untrusted', () => {
     expect(() => validateSendRequest({ recipientDid: 'did:chia:x', body: 7 })).toThrow(
       InvalidRequestError,
     );
+  });
+
+  it('refuses a non-string locale but coerces an unknown string to the default', () => {
+    // A non-string is a shape error the UI would never send — the caller might not be the UI. An
+    // unsupported or over-long STRING is not rejected, though: it lands on English, so a bad value
+    // can only ever change the language to the default, never crash or write junk to disk.
+    expect(() => validateLocale(42)).toThrow(InvalidRequestError);
+    expect(() => validateLocale(null)).toThrow(InvalidRequestError);
+    expect(validateLocale('de')).toBe('de');
+    expect(validateLocale('sw')).toBe('en');
+    expect(validateLocale('x'.repeat(MAX_LOCALE_INPUT + 1))).toBe('en');
   });
 
   it('bounds both strings from both sides of the bound', () => {

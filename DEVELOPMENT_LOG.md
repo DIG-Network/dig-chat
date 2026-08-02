@@ -64,3 +64,21 @@ them on load" for the sent half — the sender's copy has to be stored as plaint
 confidentiality comes entirely from the `safeStorage` (OS-keystore) layer, exactly as it does for the
 pairing credential (§5.2). The store re-sanitises peer text on LOAD too: the history file is just a
 file another process can edit, so its contents are untrusted peer bytes again on the way back in.
+
+## ICU plural categories differ per locale — an `{n, plural, …}` MUST match the locale's CLDR set
+
+react-intl validates a plural argument against the locale's CLDR categories, so a message cannot just
+copy English's `one`/`other` into every catalog. The 14-locale set splits three ways: `zh-CN`, `zh-TW`,
+`ko`, `ja`, `vi`, `id` have NO grammatical plural (`other` only — `one` there throws); `ru` needs
+`one`/`few`/`many`/`other`; the rest (`en`, `es`, `de`, `tr`, `pt-BR`, `fr`, `hi`) use `one`/`other`.
+Author each translated plural in the target locale's categories, not English's. (The completeness test
+checks key parity, not plural shape — the categories are a translation-correctness concern.)
+
+## noUncheckedIndexedAccess makes array/record indexing return `T | undefined`
+
+dig-chat's tsconfig has `noUncheckedIndexedAccess`, so `parts[0]`, `record[key]` and a
+`Record<string, Catalog>` lookup are all `… | undefined`. The locale resolver has to bind the indexed
+value to a local and guard it (`const primary = parts[0]; if (!primary) …`) rather than indexing
+twice, and `messagesFor` needs a `?? en` fallback even after an `isSupportedLocale` guard, because the
+guard narrows the KEY but not the record's value type. Straight ports of code from a repo without this
+flag (e.g. hub's `locales.ts`) will not typecheck until these guards are added.

@@ -204,5 +204,7 @@ function services(): IpcServices {
       transport: 'loopback',
       historyPersisted: true,
     }),
+    getLocale: async () => null,
+    setLocale: async (locale: string) => locale,
   };
 }

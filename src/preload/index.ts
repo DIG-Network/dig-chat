@@ -3,7 +3,7 @@
  *
  * # What is exposed, and what deliberately is not
  *
- * Seven functions and two subscriptions. No `ipcRenderer`, no `invoke(channel, …)`, no `require`, no
+ * Nine functions and two subscriptions. No `ipcRenderer`, no `invoke(channel, …)`, no `require`, no
  * `process` — because a bridge that exposes a general "send on this channel" function has exposed
  * every channel there will ever be, including the ones added by someone who never read this file.
  *
@@ -37,6 +37,10 @@ export interface DigChatApi {
   send(request: SendRequest): Promise<ChatMessage>;
   /** Static facts about this build. */
   getAppInfo(): Promise<AppInfo>;
+  /** The user's persisted locale choice, or `null` when they have not chosen one. */
+  getLocale(): Promise<string | null>;
+  /** Persist a locale choice; resolves to the accepted (allowlisted) locale. */
+  setLocale(locale: string): Promise<string>;
   /** Subscribe to session changes; returns an unsubscribe function. */
   onSessionChanged(listener: (status: SessionStatus) => void): () => void;
   /** Subscribe to conversation changes; returns an unsubscribe function. */
@@ -51,6 +55,8 @@ const api: DigChatApi = {
   getHistory: () => ipcRenderer.invoke(CHANNELS.chatHistory) as Promise<ChatMessage[]>,
   send: (request) => ipcRenderer.invoke(CHANNELS.chatSend, request) as Promise<ChatMessage>,
   getAppInfo: () => ipcRenderer.invoke(CHANNELS.appInfo) as Promise<AppInfo>,
+  getLocale: () => ipcRenderer.invoke(CHANNELS.localeGet) as Promise<string | null>,
+  setLocale: (locale) => ipcRenderer.invoke(CHANNELS.localeSet, locale) as Promise<string>,
 
   onSessionChanged: (listener) => subscribe(EVENTS.sessionChanged, listener),
   onChatChanged: (listener) => subscribe(EVENTS.chatChanged, listener),
