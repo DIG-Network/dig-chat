@@ -17,8 +17,12 @@
  * - **Main-process only.** Nothing here crosses to the renderer; the renderer is told only that
  *   history changed, never handed the file or the key.
  *
- * This satisfies the ecosystem's at-rest-encryption contract (normative-contract NC-2 / NC-3: app
- * data stored under `userData` and encrypted at rest through the OS keystore), mirroring §5.2.
+ * This encrypts history at rest through the OS keystore — the same interim measure §5.2 uses for the
+ * credential — and stores it under `userData`. It is a step toward, but does NOT yet fully satisfy,
+ * the ecosystem at-rest contract: NC-2 requires sealing to the user's IDENTITY KEYPAIR (dig-keystore
+ * DIGOP1), which binds the ciphertext to the DID rather than to this OS user/machine and so survives a
+ * profile restore. dig-chat holds no identity key — it lives behind the paired DIG App — so
+ * keypair-sealed at-rest is pending a DIG App data-seal capability, tracked as dig_ecosystem#2004.
  */
 
 import { chmod, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';

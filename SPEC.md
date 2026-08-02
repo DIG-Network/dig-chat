@@ -345,6 +345,11 @@ encrypted at rest through the OS keystore (Electron `safeStorage`), in the app's
 mode `0600` in a directory of mode `0700`, written atomically (temp file + rename). This mirrors §5.2:
 the confidentiality of the stored plaintext comes from the OS-keystore encryption layer.
 
+The OS keystore binds the ciphertext to this OS user and machine, not to the DID: this is an interim
+at-rest measure, not the ecosystem's keypair-sealed end state (NC-2 sealing to the user's identity
+keypair, which would survive a profile restore, is pending a DIG App data-seal capability —
+dig_ecosystem#2004).
+
 Both directions are stored as plaintext-at-rest under that encryption. A sent message was sealed to the
 RECIPIENT's key and dig-chat cannot recover it from the envelope, so the sealed envelope is not a
 sufficient at-rest form for the sender's own copy; the `safeStorage` layer is what protects it.
