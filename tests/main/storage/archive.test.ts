@@ -53,8 +53,9 @@ describe('round-trip', () => {
     expect(parsed.magic).toBe('DIGCHAT-ARCHIVE');
     expect(parsed.v).toBe(1);
     expect(parsed.cipher).toBe('AES-256-GCM');
-    expect(parsed.kdf).toMatchObject({ algo: 'argon2id', m: 65536, t: 3, p: 1 });
-    expect(Buffer.from(parsed.kdf['saltB64' as never] as string, 'base64')).toHaveLength(16);
+    const kdf = parsed.kdf as { algo: string; m: number; t: number; p: number; saltB64: string };
+    expect(kdf).toMatchObject({ algo: 'argon2id', m: 65536, t: 3, p: 1 });
+    expect(Buffer.from(kdf.saltB64, 'base64')).toHaveLength(16);
     expect(Buffer.from(parsed.nonceB64 as string, 'base64')).toHaveLength(12);
   });
 
@@ -129,7 +130,7 @@ describe('imported peer text is re-sanitised (§5.5)', () => {
     const hostile = message({ body: 'safe\r[31m‮evil', peerDid: 'did:chia:‮bob' });
     const bytes = encodeArchive(PASSPHRASE, [hostile]);
     const [restored] = decodeArchive(PASSPHRASE, bytes);
-    expect(restored.body).not.toMatch(/[\r‮]/);
-    expect(restored.peerDid).not.toMatch(/[‮]/);
+    expect(restored!.body).not.toMatch(/[\r‮]/);
+    expect(restored!.peerDid).not.toMatch(/[‮]/);
   });
 });

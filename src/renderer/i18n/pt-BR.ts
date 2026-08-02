@@ -94,6 +94,44 @@ export const ptBR: Catalog = {
     'O DIG Chat não conseguiu guardar o pareamento com segurança neste sistema, então não o guardou de forma alguma. Você vai precisar parear de novo na próxima vez.',
   'error.historyStorageUnavailable':
     'O DIG Chat não conseguiu guardar seu histórico de mensagens com segurança neste sistema, então está mantendo-o apenas nesta sessão.',
+  'settings.heading': 'Histórico',
+  'settings.export.heading': 'Exportar seu histórico',
+  'settings.export.body':
+    'Salve todo o seu histórico de conversas em um arquivo criptografado que você pode mover para outro computador. O arquivo é selado com uma frase secreta — guarde-a bem, pois é a única forma de abrir o arquivo.',
+  'settings.export.passphraseLabel': 'Frase secreta',
+  'settings.export.confirmLabel': 'Repita a frase secreta',
+  'settings.export.submit': 'Exportar para um arquivo',
+  'settings.export.exporting': 'Selando seu histórico…',
+  'settings.export.success': 'Seu histórico criptografado foi salvo em {path}.',
+  'settings.export.mismatch': 'As duas frases secretas não coincidem.',
+  'settings.import.heading': 'Importar um arquivo de histórico',
+  'settings.import.body':
+    'Abra um arquivo de histórico criptografado e mescle-o com esta conversa. As mensagens que você já tem permanecem como estão.',
+  'settings.import.passphraseLabel': 'Frase secreta',
+  'settings.import.submit': 'Escolher um arquivo e importar',
+  'settings.import.importing': 'Abrindo seu histórico…',
+  'settings.import.success':
+    '{added, plural, other {# mensagens}} adicionadas. Agora você tem {total, plural, other {# mensagens}}.',
+  'settings.retention.heading': 'Limpeza automática',
+  'settings.retention.body':
+    'Por padrão, o DIG Chat mantém todas as mensagens. Ative isto para esquecer automaticamente mensagens mais antigas que um número de dias.',
+  'settings.retention.enableLabel': 'Excluir mensagens mais antigas que uma idade definida',
+  'settings.retention.daysLabel': 'Dias para manter',
+  'settings.danger.heading': 'Excluir histórico',
+  'settings.danger.body':
+    'Excluir o histórico remove mensagens deste computador. Não pode ser desfeito e não exclui nada no computador de outra pessoa.',
+  'settings.danger.empty': 'Não há conversas para excluir.',
+  'settings.danger.clearConversation': 'Excluir conversa com {did}',
+  'settings.danger.clearAll': 'Excluir todo o histórico',
+  'settings.danger.confirmHeading': 'Excluir este histórico?',
+  'settings.danger.confirmBody':
+    'Isto remove as mensagens deste computador e não pode ser desfeito.',
+  'settings.danger.confirm': 'Excluir',
+  'settings.danger.cancel': 'Manter',
+  'error.archiveFormat': 'Esse arquivo não é um arquivo de histórico do DIG Chat.',
+  'error.archiveVersion':
+    'Esse arquivo de histórico foi criado por uma versão mais nova do DIG Chat. Atualize e tente novamente.',
+  'error.archiveDecrypt': 'Essa frase secreta não abriu o arquivo, ou o arquivo está danificado.',
   'error.emptyMessage': 'Digite algo para enviar.',
   'error.messageTooLong': 'Essa mensagem é longa demais para enviar.',
   'error.sealFailed': 'O DIG Chat se recusou a enviar: o DIG App não retornou uma mensagem selada.',

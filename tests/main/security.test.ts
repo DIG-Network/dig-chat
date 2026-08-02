@@ -206,5 +206,11 @@ function services(): IpcServices {
     }),
     getLocale: async () => null,
     setLocale: async (locale: string) => locale,
+    exportHistory: async () => ({ saved: false }),
+    importHistory: async () => ({ added: 0, total: 0 }),
+    getRetention: async () => 0,
+    setRetention: async (days: number) => days,
+    clearConversation: async () => undefined,
+    clearAllHistory: async () => undefined,
   };
 }

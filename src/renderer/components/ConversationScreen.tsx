@@ -3,6 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { sendMessage, type AppDispatch, type RootState } from '../store';
+import { HistorySettingsScreen } from './HistorySettingsScreen';
 
 /**
  * The conversation: the log, and the box to add to it.
@@ -104,6 +105,8 @@ export function ConversationScreen(): JSX.Element {
           <FormattedMessage id={sending ? 'chat.sending' : 'chat.send'} />
         </button>
       </form>
+
+      <HistorySettingsScreen />
     </section>
   );
 }

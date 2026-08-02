@@ -92,6 +92,44 @@ export const vi: Catalog = {
     'DIG Chat không thể lưu trữ ghép nối một cách an toàn trên hệ thống này, nên nó không lưu gì cả. Bạn sẽ cần ghép nối lại vào lần sau.',
   'error.historyStorageUnavailable':
     'DIG Chat không thể lưu trữ lịch sử tin nhắn của bạn một cách an toàn trên hệ thống này, nên chỉ giữ nó cho phiên này.',
+  'settings.heading': 'Lịch sử',
+  'settings.export.heading': 'Xuất lịch sử của bạn',
+  'settings.export.body':
+    'Lưu toàn bộ lịch sử trò chuyện của bạn vào một tệp được mã hóa mà bạn có thể chuyển sang máy tính khác. Tệp được niêm phong bằng một cụm mật khẩu — hãy giữ an toàn, vì đó là cách duy nhất để mở tệp.',
+  'settings.export.passphraseLabel': 'Cụm mật khẩu',
+  'settings.export.confirmLabel': 'Nhập lại cụm mật khẩu',
+  'settings.export.submit': 'Xuất ra tệp',
+  'settings.export.exporting': 'Đang niêm phong lịch sử của bạn…',
+  'settings.export.success': 'Đã lưu lịch sử được mã hóa của bạn vào {path}.',
+  'settings.export.mismatch': 'Hai cụm mật khẩu không khớp.',
+  'settings.import.heading': 'Nhập một tệp lịch sử',
+  'settings.import.body':
+    'Mở một tệp lịch sử được mã hóa và hợp nhất vào cuộc trò chuyện này. Các tin nhắn bạn đã có được giữ nguyên.',
+  'settings.import.passphraseLabel': 'Cụm mật khẩu',
+  'settings.import.submit': 'Chọn một tệp và nhập',
+  'settings.import.importing': 'Đang mở lịch sử của bạn…',
+  'settings.import.success':
+    'Đã thêm {added, plural, other {# tin nhắn}}. Bây giờ bạn có {total, plural, other {# tin nhắn}}.',
+  'settings.retention.heading': 'Tự động dọn dẹp',
+  'settings.retention.body':
+    'Theo mặc định DIG Chat giữ mọi tin nhắn. Bật tùy chọn này để tự động quên các tin nhắn cũ hơn một số ngày.',
+  'settings.retention.enableLabel': 'Xóa các tin nhắn cũ hơn độ tuổi đã đặt',
+  'settings.retention.daysLabel': 'Số ngày giữ lại',
+  'settings.danger.heading': 'Xóa lịch sử',
+  'settings.danger.body':
+    'Xóa lịch sử sẽ loại bỏ tin nhắn khỏi máy tính này. Không thể hoàn tác và không xóa bất cứ thứ gì trên máy tính của người khác.',
+  'settings.danger.empty': 'Không có cuộc trò chuyện nào để xóa.',
+  'settings.danger.clearConversation': 'Xóa cuộc trò chuyện với {did}',
+  'settings.danger.clearAll': 'Xóa toàn bộ lịch sử',
+  'settings.danger.confirmHeading': 'Xóa lịch sử này?',
+  'settings.danger.confirmBody':
+    'Thao tác này loại bỏ tin nhắn khỏi máy tính này và không thể hoàn tác.',
+  'settings.danger.confirm': 'Xóa',
+  'settings.danger.cancel': 'Giữ lại',
+  'error.archiveFormat': 'Tệp đó không phải là tệp lịch sử DIG Chat.',
+  'error.archiveVersion':
+    'Tệp lịch sử đó được tạo bởi một phiên bản DIG Chat mới hơn. Hãy cập nhật và thử lại.',
+  'error.archiveDecrypt': 'Cụm mật khẩu đó không mở được tệp, hoặc tệp bị hỏng.',
   'error.emptyMessage': 'Hãy nhập nội dung để gửi.',
   'error.messageTooLong': 'Tin nhắn đó quá dài để gửi.',
   'error.sealFailed': 'DIG Chat đã từ chối gửi: DIG App không trả về tin nhắn đã niêm phong.',

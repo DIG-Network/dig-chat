@@ -96,6 +96,46 @@ export const de: Catalog = {
     'DIG Chat konnte die Kopplung auf diesem System nicht sicher speichern und hat sie daher gar nicht gespeichert. Du musst beim nächsten Mal erneut koppeln.',
   'error.historyStorageUnavailable':
     'DIG Chat konnte deinen Nachrichtenverlauf auf diesem System nicht sicher speichern und behält ihn daher nur für diese Sitzung.',
+  'settings.heading': 'Verlauf',
+  'settings.export.heading': 'Verlauf exportieren',
+  'settings.export.body':
+    'Speichere deinen gesamten Gesprächsverlauf in einer verschlüsselten Datei, die du auf einen anderen Computer übertragen kannst. Die Datei ist mit einer Passphrase versiegelt — bewahre sie sicher auf, denn sie ist die einzige Möglichkeit, die Datei zu öffnen.',
+  'settings.export.passphraseLabel': 'Passphrase',
+  'settings.export.confirmLabel': 'Passphrase wiederholen',
+  'settings.export.submit': 'In eine Datei exportieren',
+  'settings.export.exporting': 'Verlauf wird versiegelt…',
+  'settings.export.success': 'Dein verschlüsselter Verlauf wurde in {path} gespeichert.',
+  'settings.export.mismatch': 'Die beiden Passphrasen stimmen nicht überein.',
+  'settings.import.heading': 'Verlaufsdatei importieren',
+  'settings.import.body':
+    'Öffne eine verschlüsselte Verlaufsdatei und füge sie in dieses Gespräch ein. Nachrichten, die du bereits hast, bleiben unverändert.',
+  'settings.import.passphraseLabel': 'Passphrase',
+  'settings.import.submit': 'Datei auswählen und importieren',
+  'settings.import.importing': 'Verlauf wird geöffnet…',
+  'settings.import.success':
+    '{added, plural, other {# Nachrichten}} hinzugefügt. Du hast jetzt {total, plural, other {# Nachrichten}}.',
+  'settings.retention.heading': 'Automatische Bereinigung',
+  'settings.retention.body':
+    'Standardmäßig behält DIG Chat jede Nachricht. Aktiviere dies, um Nachrichten, die älter als eine bestimmte Anzahl von Tagen sind, automatisch zu vergessen.',
+  'settings.retention.enableLabel':
+    'Nachrichten löschen, die älter als ein festgelegtes Alter sind',
+  'settings.retention.daysLabel': 'Aufzubewahrende Tage',
+  'settings.danger.heading': 'Verlauf löschen',
+  'settings.danger.body':
+    'Das Löschen des Verlaufs entfernt Nachrichten von diesem Computer. Es kann nicht rückgängig gemacht werden und löscht nichts auf dem Computer einer anderen Person.',
+  'settings.danger.empty': 'Es gibt keine Gespräche zum Löschen.',
+  'settings.danger.clearConversation': 'Gespräch mit {did} löschen',
+  'settings.danger.clearAll': 'Gesamten Verlauf löschen',
+  'settings.danger.confirmHeading': 'Diesen Verlauf löschen?',
+  'settings.danger.confirmBody':
+    'Dies entfernt die Nachrichten von diesem Computer und kann nicht rückgängig gemacht werden.',
+  'settings.danger.confirm': 'Löschen',
+  'settings.danger.cancel': 'Behalten',
+  'error.archiveFormat': 'Diese Datei ist keine DIG Chat-Verlaufsdatei.',
+  'error.archiveVersion':
+    'Diese Verlaufsdatei wurde mit einer neueren Version von DIG Chat erstellt. Aktualisiere und versuche es erneut.',
+  'error.archiveDecrypt':
+    'Diese Passphrase hat die Datei nicht geöffnet, oder die Datei ist beschädigt.',
   'error.emptyMessage': 'Gib etwas zum Senden ein.',
   'error.messageTooLong': 'Diese Nachricht ist zu lang zum Senden.',
   'error.sealFailed':

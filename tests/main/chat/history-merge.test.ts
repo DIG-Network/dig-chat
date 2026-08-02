@@ -65,8 +65,8 @@ describe('defensive re-sanitising', () => {
   it('strips control and direction-altering bytes from imported peer text', () => {
     const imported = [message({ id: 'z', body: 'safe\revil', peerDid: 'did:chia:‮bob' })];
     const [merged] = mergeHistories([], imported);
-    expect(merged.body).not.toMatch(/[\r]/);
-    expect(merged.peerDid).not.toMatch(/[‮]/);
+    expect(merged!.body).not.toMatch(/[\r]/);
+    expect(merged!.peerDid).not.toMatch(/[‮]/);
   });
 
   it('drops an imported entry that is not a well-formed message', () => {

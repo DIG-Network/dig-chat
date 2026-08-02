@@ -100,6 +100,49 @@ export const en = {
     'DIG Chat could not store the pairing securely on this system, so it did not store it at all. You will need to pair again next time.',
   'error.historyStorageUnavailable':
     'DIG Chat could not store your message history securely on this system, so it is keeping it only for this session.',
+  'settings.heading': 'History',
+
+  'settings.export.heading': 'Export your history',
+  'settings.export.body':
+    'Save your whole conversation history to an encrypted file you can move to another computer. The file is sealed with a passphrase — keep it safe, because it is the only way to open the file.',
+  'settings.export.passphraseLabel': 'Passphrase',
+  'settings.export.confirmLabel': 'Repeat passphrase',
+  'settings.export.submit': 'Export to a file',
+  'settings.export.exporting': 'Sealing your history…',
+  'settings.export.success': 'Saved your encrypted history to {path}.',
+  'settings.export.mismatch': 'The two passphrases do not match.',
+
+  'settings.import.heading': 'Import a history file',
+  'settings.import.body':
+    'Open an encrypted history file and merge it into this conversation. Messages you already have are left as they are.',
+  'settings.import.passphraseLabel': 'Passphrase',
+  'settings.import.submit': 'Choose a file and import',
+  'settings.import.importing': 'Opening your history…',
+  'settings.import.success':
+    'Added {added, plural, one {# message} other {# messages}}. You now have {total, plural, one {# message} other {# messages}}.',
+
+  'settings.retention.heading': 'Automatic clean-up',
+  'settings.retention.body':
+    'By default DIG Chat keeps every message. Turn this on to automatically forget messages older than a number of days.',
+  'settings.retention.enableLabel': 'Delete messages older than a set age',
+  'settings.retention.daysLabel': 'Days to keep',
+
+  'settings.danger.heading': 'Delete history',
+  'settings.danger.body':
+    'Deleting history removes messages from this computer. It cannot be undone, and it does not delete anything on anyone else’s computer.',
+  'settings.danger.empty': 'There are no conversations to delete.',
+  'settings.danger.clearConversation': 'Delete conversation with {did}',
+  'settings.danger.clearAll': 'Delete all history',
+  'settings.danger.confirmHeading': 'Delete this history?',
+  'settings.danger.confirmBody':
+    'This removes the messages from this computer and cannot be undone.',
+  'settings.danger.confirm': 'Delete',
+  'settings.danger.cancel': 'Keep it',
+
+  'error.archiveFormat': 'That file is not a DIG Chat history file.',
+  'error.archiveVersion':
+    'That history file was made by a newer version of DIG Chat. Update and try again.',
+  'error.archiveDecrypt': 'That passphrase did not open the file, or the file is damaged.',
   'error.emptyMessage': 'Type something to send.',
   'error.messageTooLong': 'That message is too long to send.',
   'error.sealFailed': 'DIG Chat refused to send: the DIG App did not return a sealed message.',

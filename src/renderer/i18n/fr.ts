@@ -97,6 +97,44 @@ export const fr: Catalog = {
     'DIG Chat n’a pas pu stocker l’appairage en toute sécurité sur ce système, il ne l’a donc pas stocké du tout. Vous devrez appairer de nouveau la prochaine fois.',
   'error.historyStorageUnavailable':
     'DIG Chat n’a pas pu stocker votre historique de messages en toute sécurité sur ce système, il ne le conserve donc que pour cette session.',
+  'settings.heading': 'Historique',
+  'settings.export.heading': 'Exporter votre historique',
+  'settings.export.body':
+    'Enregistrez tout votre historique de conversation dans un fichier chiffré que vous pouvez déplacer vers un autre ordinateur. Le fichier est scellé avec une phrase secrète — gardez-la en sécurité, car c’est le seul moyen d’ouvrir le fichier.',
+  'settings.export.passphraseLabel': 'Phrase secrète',
+  'settings.export.confirmLabel': 'Répétez la phrase secrète',
+  'settings.export.submit': 'Exporter vers un fichier',
+  'settings.export.exporting': 'Scellement de votre historique…',
+  'settings.export.success': 'Votre historique chiffré a été enregistré dans {path}.',
+  'settings.export.mismatch': 'Les deux phrases secrètes ne correspondent pas.',
+  'settings.import.heading': 'Importer un fichier d’historique',
+  'settings.import.body':
+    'Ouvrez un fichier d’historique chiffré et fusionnez-le avec cette conversation. Les messages que vous avez déjà restent inchangés.',
+  'settings.import.passphraseLabel': 'Phrase secrète',
+  'settings.import.submit': 'Choisir un fichier et importer',
+  'settings.import.importing': 'Ouverture de votre historique…',
+  'settings.import.success':
+    '{added, plural, other {# messages}} ajoutés. Vous avez maintenant {total, plural, other {# messages}}.',
+  'settings.retention.heading': 'Nettoyage automatique',
+  'settings.retention.body':
+    'Par défaut, DIG Chat conserve chaque message. Activez ceci pour oublier automatiquement les messages plus anciens qu’un nombre de jours.',
+  'settings.retention.enableLabel': 'Supprimer les messages plus anciens qu’un âge défini',
+  'settings.retention.daysLabel': 'Jours à conserver',
+  'settings.danger.heading': 'Supprimer l’historique',
+  'settings.danger.body':
+    'Supprimer l’historique retire les messages de cet ordinateur. C’est irréversible et cela ne supprime rien sur l’ordinateur de quelqu’un d’autre.',
+  'settings.danger.empty': 'Il n’y a aucune conversation à supprimer.',
+  'settings.danger.clearConversation': 'Supprimer la conversation avec {did}',
+  'settings.danger.clearAll': 'Supprimer tout l’historique',
+  'settings.danger.confirmHeading': 'Supprimer cet historique ?',
+  'settings.danger.confirmBody': 'Cela retire les messages de cet ordinateur et est irréversible.',
+  'settings.danger.confirm': 'Supprimer',
+  'settings.danger.cancel': 'Le garder',
+  'error.archiveFormat': 'Ce fichier n’est pas un fichier d’historique DIG Chat.',
+  'error.archiveVersion':
+    'Ce fichier d’historique a été créé par une version plus récente de DIG Chat. Mettez à jour et réessayez.',
+  'error.archiveDecrypt':
+    'Cette phrase secrète n’a pas ouvert le fichier, ou le fichier est endommagé.',
   'error.emptyMessage': 'Saisissez quelque chose à envoyer.',
   'error.messageTooLong': 'Ce message est trop long pour être envoyé.',
   'error.sealFailed': 'DIG Chat a refusé d’envoyer : la DIG App n’a pas renvoyé de message scellé.',

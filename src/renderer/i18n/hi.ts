@@ -95,6 +95,44 @@ export const hi: Catalog = {
     'DIG Chat इस सिस्टम पर युग्मन को सुरक्षित रूप से संग्रहीत नहीं कर सका, इसलिए उसने इसे बिलकुल संग्रहीत नहीं किया। आपको अगली बार फिर से युग्मित करना होगा।',
   'error.historyStorageUnavailable':
     'DIG Chat इस सिस्टम पर आपके संदेश इतिहास को सुरक्षित रूप से संग्रहीत नहीं कर सका, इसलिए इसे केवल इस सत्र के लिए रख रहा है।',
+  'settings.heading': 'इतिहास',
+  'settings.export.heading': 'अपना इतिहास निर्यात करें',
+  'settings.export.body':
+    'अपने पूरे बातचीत इतिहास को एक एन्क्रिप्टेड फ़ाइल में सहेजें जिसे आप दूसरे कंप्यूटर पर ले जा सकते हैं। फ़ाइल एक पासफ़्रेज़ से सील की जाती है — इसे सुरक्षित रखें, क्योंकि फ़ाइल खोलने का यही एकमात्र तरीका है।',
+  'settings.export.passphraseLabel': 'पासफ़्रेज़',
+  'settings.export.confirmLabel': 'पासफ़्रेज़ दोहराएँ',
+  'settings.export.submit': 'फ़ाइल में निर्यात करें',
+  'settings.export.exporting': 'आपका इतिहास सील किया जा रहा है…',
+  'settings.export.success': 'आपका एन्क्रिप्टेड इतिहास {path} में सहेजा गया।',
+  'settings.export.mismatch': 'दोनों पासफ़्रेज़ मेल नहीं खाते।',
+  'settings.import.heading': 'इतिहास फ़ाइल आयात करें',
+  'settings.import.body':
+    'एक एन्क्रिप्टेड इतिहास फ़ाइल खोलें और उसे इस बातचीत में मिलाएँ। जो संदेश आपके पास पहले से हैं, वे वैसे ही रहते हैं।',
+  'settings.import.passphraseLabel': 'पासफ़्रेज़',
+  'settings.import.submit': 'फ़ाइल चुनें और आयात करें',
+  'settings.import.importing': 'आपका इतिहास खोला जा रहा है…',
+  'settings.import.success':
+    '{added, plural, other {# संदेश}} जोड़े गए। अब आपके पास {total, plural, other {# संदेश}} हैं।',
+  'settings.retention.heading': 'स्वचालित सफ़ाई',
+  'settings.retention.body':
+    'डिफ़ॉल्ट रूप से DIG Chat हर संदेश रखता है। कुछ दिनों से पुराने संदेशों को स्वचालित रूप से भूलने के लिए इसे चालू करें।',
+  'settings.retention.enableLabel': 'तय आयु से पुराने संदेश हटाएँ',
+  'settings.retention.daysLabel': 'रखने के दिन',
+  'settings.danger.heading': 'इतिहास हटाएँ',
+  'settings.danger.body':
+    'इतिहास हटाने से इस कंप्यूटर से संदेश हट जाते हैं। इसे पूर्ववत नहीं किया जा सकता, और यह किसी और के कंप्यूटर पर कुछ नहीं हटाता।',
+  'settings.danger.empty': 'हटाने के लिए कोई बातचीत नहीं है।',
+  'settings.danger.clearConversation': '{did} के साथ बातचीत हटाएँ',
+  'settings.danger.clearAll': 'सारा इतिहास हटाएँ',
+  'settings.danger.confirmHeading': 'यह इतिहास हटाएँ?',
+  'settings.danger.confirmBody':
+    'यह इस कंप्यूटर से संदेश हटाता है और इसे पूर्ववत नहीं किया जा सकता।',
+  'settings.danger.confirm': 'हटाएँ',
+  'settings.danger.cancel': 'रहने दें',
+  'error.archiveFormat': 'वह फ़ाइल DIG Chat इतिहास फ़ाइल नहीं है।',
+  'error.archiveVersion':
+    'वह इतिहास फ़ाइल DIG Chat के नए संस्करण से बनाई गई थी। अपडेट करें और फिर से प्रयास करें।',
+  'error.archiveDecrypt': 'उस पासफ़्रेज़ ने फ़ाइल नहीं खोली, या फ़ाइल क्षतिग्रस्त है।',
   'error.emptyMessage': 'भेजने के लिए कुछ टाइप करें।',
   'error.messageTooLong': 'वह संदेश भेजने के लिए बहुत लंबा है।',
   'error.sealFailed':

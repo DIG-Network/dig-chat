@@ -6,16 +6,21 @@
  * is why this one file is excluded from the coverage floor while everything it assembles is not.
  */
 
+import { chmod, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
-import { BrowserWindow, app, ipcMain, safeStorage, shell } from 'electron';
+import { BrowserWindow, app, dialog, ipcMain, safeStorage, shell } from 'electron';
 
-import { Conversation } from './chat/conversation';
+import { Conversation, type ChatMessage } from './chat/conversation';
+import { mergeHistories } from './chat/history-merge';
+import { pruneAged } from './chat/retention';
 import { LoopbackTransport } from './transport/loopback';
 import { Session } from './session';
 import { CredentialStore } from './storage/credentials';
+import { decodeArchive, encodeArchive } from './storage/archive';
 import { HistoryStore } from './storage/history';
 import { LocaleStore } from './storage/locale';
+import { RetentionStore } from './storage/retention';
 import { loopbackChannelFactory } from './pairing/channel';
 import {
   CONTENT_SECURITY_POLICY,
@@ -33,6 +38,17 @@ let session: Session | null = null;
 let conversation: Conversation | null = null;
 let history: HistoryStore | null = null;
 let locale: LocaleStore | null = null;
+let retention: RetentionStore | null = null;
+let sweepTimer: ReturnType<typeof setInterval> | null = null;
+
+/** The clock, behind a seam so the retention sweep is pinnable rather than wall-clock bound. */
+const now = (): number => Date.now();
+
+/** Milliseconds in a day, the unit the retention window is stored in. */
+const DAY_MS = 86_400_000;
+
+/** How often the background retention sweep runs while the app is open. */
+const SWEEP_INTERVAL_MS = 6 * 60 * 60 * 1_000;
 
 /** Build the one window, hardened, and load the renderer. */
 function createWindow(): BrowserWindow {
@@ -113,7 +129,72 @@ function servicesFor(live: Session): IpcServices {
     }),
     getLocale: () => locale?.load() ?? Promise.resolve(null),
     setLocale: (chosen) => locale?.save(chosen) ?? Promise.resolve(chosen),
+    exportHistory: (passphrase) => exportHistoryTo(passphrase),
+    importHistory: (passphrase) => importHistoryFrom(live, passphrase),
+    getRetention: () => retention?.load() ?? Promise.resolve(0),
+    setRetention: async (days) => {
+      const accepted = (await retention?.save(days)) ?? 0;
+      await sweep(live);
+      return accepted;
+    },
+    clearConversation: async (peerDid) => {
+      await history?.clearConversation(peerDid);
+      await attachConversation(live);
+    },
+    clearAllHistory: async () => {
+      await history?.clear();
+      await attachConversation(live);
+    },
   };
+}
+
+/**
+ * Seal the current history to a passphrase archive at a location the user chooses.
+ *
+ * The renderer never sees the file path until AFTER the write, and never sees the bytes at all: the
+ * save dialog, the encryption and the 0600 write all happen here in the main process. A cancelled
+ * dialog is an honest `{ saved: false }`, not an error.
+ */
+async function exportHistoryTo(passphrase: string): Promise<{ saved: boolean; path?: string }> {
+  const messages = conversation?.history() ?? (await history?.load()) ?? [];
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    title: 'Export DIG Chat history',
+    defaultPath: 'dig-chat-history.digchat',
+    filters: [{ name: 'DIG Chat archive', extensions: ['digchat'] }],
+  });
+  if (canceled || !filePath) return { saved: false };
+
+  await writeFile(filePath, encodeArchive(passphrase, messages), { mode: 0o600, flag: 'w' });
+  await chmod(filePath, 0o600).catch(() => undefined);
+  return { saved: true, path: filePath };
+}
+
+/**
+ * Open a passphrase archive the user chooses and merge it into the current history.
+ *
+ * The merge, the sanitising and the bounding all happen in {@link mergeHistories}; a decode failure
+ * (wrong passphrase, corrupt file, unsupported version) propagates as its typed error so the renderer
+ * can show the specific message. On success the in-memory conversation is rebuilt from the saved
+ * result, so the log the user sees is the merged one.
+ */
+async function importHistoryFrom(
+  live: Session,
+  passphrase: string,
+): Promise<{ added: number; total: number }> {
+  const { canceled, filePaths } = await dialog.showOpenDialog({
+    title: 'Import DIG Chat history',
+    properties: ['openFile'],
+    filters: [{ name: 'DIG Chat archive', extensions: ['digchat'] }],
+  });
+  const chosen = filePaths[0];
+  const current = conversation?.history() ?? (await history?.load()) ?? [];
+  if (canceled || !chosen) return { added: 0, total: current.length };
+
+  const imported = decodeArchive(passphrase, await readFile(chosen));
+  const merged = mergeHistories(current, imported);
+  await history?.save(merged);
+  await attachConversation(live);
+  return { added: merged.length - current.length, total: merged.length };
 }
 
 /**
@@ -131,7 +212,7 @@ async function attachConversation(live: Session): Promise<void> {
   if (!agent || !identity) return;
 
   const persists = history?.isAvailable() ?? false;
-  const initialHistory = persists ? await history!.load() : undefined;
+  const initialHistory = persists ? await pruneOnLoad(await history!.load()) : undefined;
 
   conversation = new Conversation({
     agent,
@@ -152,10 +233,42 @@ async function attachConversation(live: Session): Promise<void> {
   });
 }
 
+/**
+ * Apply the retention window to freshly-loaded history, persisting the result if anything was dropped.
+ *
+ * Retention is enforced at the moment history is read (SPEC §5.8), so an app opened after a long gap
+ * forgets aged messages immediately rather than only on the next periodic sweep. When retention is
+ * off (window 0) this is a no-op that returns the input untouched.
+ */
+async function pruneOnLoad(loaded: ChatMessage[]): Promise<ChatMessage[]> {
+  const days = (await retention?.load()) ?? 0;
+  const pruned = pruneAged(loaded, days * DAY_MS, now());
+  if (pruned.length !== loaded.length) await history?.save(pruned);
+  return pruned;
+}
+
+/**
+ * The periodic retention sweep: reload, prune, save-if-changed, and tell the renderer.
+ *
+ * Called on a timer and whenever the window changes, so a long-running app enforces retention without
+ * a restart. It rebuilds the in-memory conversation from the pruned result so the open UI reflects the
+ * deletion, not just the file.
+ */
+async function sweep(live: Session): Promise<void> {
+  if (!(history?.isAvailable() ?? false)) return;
+  const days = (await retention?.load()) ?? 0;
+  const loaded = await history!.load();
+  const pruned = pruneAged(loaded, days * DAY_MS, now());
+  if (pruned.length === loaded.length) return;
+  await history!.save(pruned);
+  await attachConversation(live);
+}
+
 void app.whenReady().then(async () => {
   const userData = app.getPath('userData');
   history = new HistoryStore(userData, safeStorage);
   locale = new LocaleStore(userData);
+  retention = new RetentionStore(userData);
   session = new Session({
     channels: loopbackChannelFactory,
     credentials: new CredentialStore(userData, safeStorage),
@@ -169,9 +282,14 @@ void app.whenReady().then(async () => {
   const status = await session.refresh();
   await attachConversation(session);
   window.webContents.send(EVENTS.sessionChanged, status);
+
+  // Enforce retention on a timer so a long-running app forgets aged messages without a restart.
+  sweepTimer = setInterval(() => void sweep(session!), SWEEP_INTERVAL_MS);
 });
 
 app.on('window-all-closed', () => {
+  if (sweepTimer) clearInterval(sweepTimer);
+  sweepTimer = null;
   conversation?.close();
   session?.close();
   transport.close();
