@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { mergeHistories } from '../../../src/main/chat/history-merge';
+import { countNewMessages, mergeHistories } from '../../../src/main/chat/history-merge';
 import { MAX_HISTORY_MESSAGES } from '../../../src/main/chat/conversation';
 import type { ChatMessage } from '../../../src/main/chat/conversation';
 
@@ -75,6 +75,34 @@ describe('defensive re-sanitising', () => {
     const imported = [{ id: 'bad' } as unknown as ChatMessage, message({ id: 'ok', at: 5 })];
     const merged = mergeHistories([], imported);
     expect(merged.map((m) => m.id)).toEqual(['ok']);
+  });
+});
+
+describe('countNewMessages (the honest "added" count)', () => {
+  it('counts only imported ids that existing does not already hold', () => {
+    const existing = [message({ id: 'a' }), message({ id: 'b' })];
+    const imported = [message({ id: 'b' }), message({ id: 'c' }), message({ id: 'd' })];
+    expect(countNewMessages(existing, imported)).toBe(2);
+  });
+
+  it('counts a repeated imported id once', () => {
+    const imported = [message({ id: 'x' }), message({ id: 'x' })];
+    expect(countNewMessages([], imported)).toBe(1);
+  });
+
+  it('ignores imported entries that are not well-formed messages', () => {
+    const imported = [{ id: 'bad' } as unknown as ChatMessage, message({ id: 'ok' })];
+    expect(countNewMessages([], imported)).toBe(1);
+  });
+
+  it('never goes negative when bounding evicts existing to make room for newer imports', () => {
+    const existing = Array.from({ length: MAX_HISTORY_MESSAGES }, (_, i) =>
+      message({ id: `e-${i}`, at: i }),
+    );
+    const imported = [message({ id: 'newest', at: MAX_HISTORY_MESSAGES + 1 })];
+    // merged.length - existing.length would be 0 here even though a message was genuinely added.
+    expect(countNewMessages(existing, imported)).toBe(1);
+    expect(mergeHistories(existing, imported)).toHaveLength(MAX_HISTORY_MESSAGES);
   });
 });
 

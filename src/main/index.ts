@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import { BrowserWindow, app, dialog, ipcMain, safeStorage, shell } from 'electron';
 
 import { Conversation, type ChatMessage } from './chat/conversation';
-import { mergeHistories } from './chat/history-merge';
+import { countNewMessages, mergeHistories } from './chat/history-merge';
 import { pruneAged } from './chat/retention';
 import { LoopbackTransport } from './transport/loopback';
 import { Session } from './session';
@@ -191,10 +191,11 @@ async function importHistoryFrom(
   if (canceled || !chosen) return { added: 0, total: current.length };
 
   const imported = decodeArchive(passphrase, await readFile(chosen));
+  const added = countNewMessages(current, imported);
   const merged = mergeHistories(current, imported);
   await history?.save(merged);
   await attachConversation(live);
-  return { added: merged.length - current.length, total: merged.length };
+  return { added, total: merged.length };
 }
 
 /**

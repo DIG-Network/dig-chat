@@ -3,7 +3,8 @@
  *
  * # What is exposed, and what deliberately is not
  *
- * Nine functions and two subscriptions. No `ipcRenderer`, no `invoke(channel, …)`, no `require`, no
+ * A small, fixed set of named functions plus two subscriptions. No `ipcRenderer`, no
+ * `invoke(channel, …)`, no `require`, no
  * `process` — because a bridge that exposes a general "send on this channel" function has exposed
  * every channel there will ever be, including the ones added by someone who never read this file.
  *

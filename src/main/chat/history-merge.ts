@@ -44,6 +44,25 @@ export function mergeHistories(
   return boundHistory(merged);
 }
 
+/**
+ * How many messages `imported` would actually add to `existing` — the count of distinct valid ids it
+ * carries that `existing` does not already hold.
+ *
+ * This is the honest "added" number to report after a restore: it counts what was genuinely new, and
+ * unlike `merged.length - existing.length` it never goes negative or under-reports when
+ * {@link boundHistory} evicts older messages to make room for newer imported ones.
+ */
+export function countNewMessages(
+  existing: readonly ChatMessage[],
+  imported: readonly ChatMessage[],
+): number {
+  const have = new Set(existing.map((message) => message.id));
+  const fresh = new Set<string>();
+  for (const message of imported)
+    if (isStoredMessage(message) && !have.has(message.id)) fresh.add(message.id);
+  return fresh.size;
+}
+
 /** Re-neutralise a message's peer text: the imported half came from an untrusted file. */
 function clean(message: ChatMessage): ChatMessage {
   return {
