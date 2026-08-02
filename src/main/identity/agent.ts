@@ -61,7 +61,16 @@ export interface IdentitySummary {
 
 /** A message dig-chat received, once the DIG App has opened it. */
 export interface OpenedMessage {
-  /** The DID the envelope claims sent it — authenticated by the AEAD, so it is not merely a claim. */
+  /**
+   * The DID the envelope claims sent it — an UNVERIFIED claim, not an authenticated identity.
+   *
+   * Under DIGCHAT1 suite 1 (a NaCl sealed box) this is bound into the AEAD's associated data for
+   * transit integrity — a relay cannot re-address the envelope — but a sealed box authenticates the
+   * recipient's key, not the sender's: anyone holding the recipient's published sealing key can seal
+   * a message carrying any `senderDid`. Consumers MUST NOT attribute identity or trust from it; it is
+   * handled as untrusted peer text (see `../chat/conversation.ts`). Sender authentication is a future
+   * DIGCHAT1 suite 2 (dig_ecosystem #1940). `SPEC.md` §3.4 and §6 record this.
+   */
   readonly senderDid: string;
   /** The plaintext. Untrusted text: it came from another person's keyboard. */
   readonly plaintext: Uint8Array;
