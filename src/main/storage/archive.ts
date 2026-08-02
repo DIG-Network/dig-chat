@@ -29,8 +29,9 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 
 import { argon2id } from '@noble/hashes/argon2';
 
-import type { ChatMessage, Direction } from '../chat/conversation';
+import type { ChatMessage } from '../chat/conversation';
 import { sanitizeIdentifier, sanitizePeerText } from '../chat/peer-text';
+import { isStoredMessage } from '../chat/stored-message';
 
 /** The magic string every archive begins with, so a foreign file is refused before any key work. */
 export const ARCHIVE_MAGIC = 'DIGCHAT-ARCHIVE';
@@ -77,9 +78,6 @@ interface ArchivePayload {
   readonly v: 1;
   readonly messages: ChatMessage[];
 }
-
-/** The two directions a stored message may carry, so an unknown value is dropped on import. */
-const DIRECTIONS: readonly Direction[] = ['sent', 'received'];
 
 /**
  * Seal `messages` into a `DIGCHAT-ARCHIVE` v1 container under `passphrase`.
@@ -248,20 +246,6 @@ function isKdfHeader(value: unknown): value is KdfHeader {
     typeof t === 'number' &&
     typeof p === 'number' &&
     typeof saltB64 === 'string'
-  );
-}
-
-/** Whether a decoded entry has the exact shape of a stored message, so a tampered one is dropped. */
-function isStoredMessage(value: unknown): value is ChatMessage {
-  if (typeof value !== 'object' || value === null) return false;
-  const { id, direction, peerDid, body, at } = value as Record<string, unknown>;
-  return (
-    typeof id === 'string' &&
-    typeof direction === 'string' &&
-    DIRECTIONS.includes(direction as Direction) &&
-    typeof peerDid === 'string' &&
-    typeof body === 'string' &&
-    typeof at === 'number'
   );
 }
 
