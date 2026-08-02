@@ -55,3 +55,12 @@ purpose: distinguishing them tells a local process racing to redeem someone else
 human is mid-pairing. A client must not claim to know which. What a client CAN do is check the
 SHAPE locally first — an issued code survives only five wrong attempts, and the fifth destroys it, so
 sending a six-character typo costs the user a fifth of their code for nothing.
+
+## A sent message cannot be recovered from its own envelope — persist plaintext, protect the file
+
+dig-chat seals each outbound message to the RECIPIENT's key, so it holds no key that can reopen its
+own sent envelopes. Persisting history therefore cannot mean "store the sealed envelopes and reopen
+them on load" for the sent half — the sender's copy has to be stored as plaintext, and the at-rest
+confidentiality comes entirely from the `safeStorage` (OS-keystore) layer, exactly as it does for the
+pairing credential (§5.2). The store re-sanitises peer text on LOAD too: the history file is just a
+file another process can edit, so its contents are untrusted peer bytes again on the way back in.

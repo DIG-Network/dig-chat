@@ -46,6 +46,7 @@ function installBridge(over: Partial<DigChatApi> = {}): DigChatApi {
       version: '0.1.0',
       reachesOtherMachines: false,
       transport: 'loopback',
+      historyPersisted: true,
     })),
     onSessionChanged: vi.fn(() => () => undefined),
     onChatChanged: vi.fn(() => () => undefined),
@@ -79,6 +80,7 @@ async function renderApp(preloaded?: Partial<UiState>) {
             version: '0.1.0',
             reachesOtherMachines: false,
             transport: 'loopback',
+            historyPersisted: true,
           },
       ),
       getHistory: vi.fn(async () => [...(preloaded.messages ?? [])]),
@@ -118,7 +120,12 @@ describe('the connection state is reported honestly', () => {
     // collapsed them would send a paired user to redo a pairing that is perfectly fine.
     await renderApp({
       status: { state: 'app-unreachable', did: null, pairedAt: 1 },
-      appInfo: { version: '0.1.0', reachesOtherMachines: false, transport: 'loopback' },
+      appInfo: {
+        version: '0.1.0',
+        reachesOtherMachines: false,
+        transport: 'loopback',
+        historyPersisted: true,
+      },
     });
 
     expect(screen.getByTestId('unreachable')).toBeInTheDocument();
@@ -148,7 +155,12 @@ describe('the transport notice', () => {
     // the machine will assume it did.
     await renderApp({
       status: connected,
-      appInfo: { version: '0.1.0', reachesOtherMachines: false, transport: 'loopback' },
+      appInfo: {
+        version: '0.1.0',
+        reachesOtherMachines: false,
+        transport: 'loopback',
+        historyPersisted: true,
+      },
     });
     expect(screen.getByTestId('transport-notice')).toHaveTextContent(/stay on this computer/i);
   });
@@ -158,9 +170,44 @@ describe('the transport notice', () => {
     // transport lands — and nobody would notice, because the notice would still read plausibly.
     await renderApp({
       status: connected,
-      appInfo: { version: '0.1.0', reachesOtherMachines: true, transport: 'peer' },
+      appInfo: {
+        version: '0.1.0',
+        reachesOtherMachines: true,
+        transport: 'peer',
+        historyPersisted: true,
+      },
     });
     expect(screen.queryByTestId('transport-notice')).not.toBeInTheDocument();
+  });
+});
+
+describe('the history-persistence notice', () => {
+  it('warns when this computer cannot store history securely', async () => {
+    // The refuse-and-tell posture, at the UI: when the OS offers no encryption backend history is
+    // kept in memory only, and the user is told rather than left to assume it was saved.
+    await renderApp({
+      status: connected,
+      appInfo: {
+        version: '0.1.0',
+        reachesOtherMachines: false,
+        transport: 'loopback',
+        historyPersisted: false,
+      },
+    });
+    expect(screen.getByTestId('history-ephemeral')).toHaveTextContent(/only until you close it/i);
+  });
+
+  it('stays silent when history is persisted', async () => {
+    await renderApp({
+      status: connected,
+      appInfo: {
+        version: '0.1.0',
+        reachesOtherMachines: false,
+        transport: 'loopback',
+        historyPersisted: true,
+      },
+    });
+    expect(screen.queryByTestId('history-ephemeral')).not.toBeInTheDocument();
   });
 });
 
@@ -236,7 +283,12 @@ describe('the version is exposed three ways (§6.7)', () => {
   it('shows the build version on screen', async () => {
     await renderApp({
       status: connected,
-      appInfo: { version: '1.2.3', reachesOtherMachines: false, transport: 'loopback' },
+      appInfo: {
+        version: '1.2.3',
+        reachesOtherMachines: false,
+        transport: 'loopback',
+        historyPersisted: true,
+      },
     });
     expect(screen.getByTestId('app-version')).toHaveTextContent('1.2.3');
   });

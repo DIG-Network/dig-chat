@@ -338,7 +338,29 @@ exposed. No channel returns the pairing credential.
 Every IPC payload is validated in the main process as untrusted input: type-checked and
 length-bounded.
 
-### 5.4 Peer text
+### 5.4 History storage
+
+Message history — both sent and received messages, as displayed — is persisted across restarts,
+encrypted at rest through the OS keystore (Electron `safeStorage`), in the app's `userData` directory,
+mode `0600` in a directory of mode `0700`, written atomically (temp file + rename). This mirrors §5.2:
+the confidentiality of the stored plaintext comes from the OS-keystore encryption layer.
+
+Both directions are stored as plaintext-at-rest under that encryption. A sent message was sealed to the
+RECIPIENT's key and dig-chat cannot recover it from the envelope, so the sealed envelope is not a
+sufficient at-rest form for the sender's own copy; the `safeStorage` layer is what protects it.
+
+Where no OS encryption backend exists, dig-chat MUST NOT write history in the clear: it runs the
+session in memory only and tells the user that history will not be saved (`historyPersisted = false`
+on `app:info`). This is §5.2's refuse-and-tell posture applied to history.
+
+Stored history is bounded (a maximum message count and a maximum serialised byte size); the oldest
+messages are evicted first. On load, every stored DID and body passes through §5.5 (Peer text)
+sanitisation again, so a tampered store cannot reintroduce raw peer bytes or an unbounded log.
+
+Forgetting the pairing clears the stored history: the credential that justified storing decrypted chat
+is gone, so the history does not outlive it.
+
+### 5.5 Peer text
 
 A DID, a display name and a message body are chosen by a peer. All of them pass through one
 neutralisation function before dig-chat stores them: C0 and C1 control characters, the Unicode
@@ -365,8 +387,9 @@ Stated here rather than implied by their absence.
    is no way to look up another DID's. Sending to an arbitrary DID therefore cannot work until the
    DID document is resolvable through dig-node.
 4. **The attestation is not verified.** dig-chat carries `attestation_b64` and does not check it.
-5. **History is not persisted.** Message history lives in memory for the session. Where decrypted
-   plaintext may live at rest is a decision that has not been made.
+5. ~~History is not persisted.~~ **Resolved.** Message history is persisted across restarts, encrypted
+   at rest through the OS keystore (§5.4). Where no encryption backend exists, dig-chat degrades to
+   in-memory only and tells the user, rather than writing decrypted chat in the clear.
 6. **The sender is not authenticated.** DIGCHAT1 suite 1 provides confidentiality to the recipient
    only. `sender_did` travels in the header, bound into the AEAD for transit integrity (§4.3), but it
    is an unverified claim: anyone with the recipient's published sealing key can seal a message under

@@ -14,6 +14,7 @@ import { Conversation } from './chat/conversation';
 import { LoopbackTransport } from './transport/loopback';
 import { Session } from './session';
 import { CredentialStore } from './storage/credentials';
+import { HistoryStore } from './storage/history';
 import { loopbackChannelFactory } from './pairing/channel';
 import {
   CONTENT_SECURITY_POLICY,
@@ -29,6 +30,7 @@ const transport = new LoopbackTransport();
 let window: BrowserWindow | null = null;
 let session: Session | null = null;
 let conversation: Conversation | null = null;
+let history: HistoryStore | null = null;
 
 /** Build the one window, hardened, and load the renderer. */
 function createWindow(): BrowserWindow {
@@ -75,17 +77,20 @@ function servicesFor(live: Session): IpcServices {
     status: () => live.status(),
     refresh: async () => {
       const status = await live.refresh();
-      attachConversation(live);
+      await attachConversation(live);
       return status;
     },
     pair: async (code) => {
       const status = await live.pairWithCode(code);
-      attachConversation(live);
+      await attachConversation(live);
       return status;
     },
     forget: async () => {
       conversation?.close();
       conversation = null;
+      // Forgetting the pairing forgets the conversation it protected: the credential is gone, so
+      // keeping its decrypted history would outlive the identity that justified storing it.
+      await history?.clear();
       return live.forgetPairing();
     },
     history: () => conversation?.history() ?? [],
@@ -102,28 +107,53 @@ function servicesFor(live: Session): IpcServices {
       version,
       reachesOtherMachines: transport.reachesOtherMachines,
       transport: transport.kind,
+      historyPersisted: history?.isAvailable() ?? false,
     }),
   };
 }
 
-/** Build the conversation once the session is connected, and tell the renderer when it changes. */
-function attachConversation(live: Session): void {
+/**
+ * Build the conversation once the session is connected, restore its history, and tell the renderer
+ * when it changes.
+ *
+ * History is loaded from and sealed to {@link history} only when the OS offers an encryption backend;
+ * otherwise `initialHistory`/`persist` are omitted and the conversation runs in memory only.
+ */
+async function attachConversation(live: Session): Promise<void> {
   const agent = live.identityAgent();
   const identity = live.currentIdentity();
   conversation?.close();
   conversation = null;
   if (!agent || !identity) return;
 
-  conversation = new Conversation({ agent, transport, self: identity, clock: () => Date.now() });
+  const persists = history?.isAvailable() ?? false;
+  const initialHistory = persists ? await history!.load() : undefined;
+
+  conversation = new Conversation({
+    agent,
+    transport,
+    self: identity,
+    clock: () => Date.now(),
+    initialHistory,
+    persist: persists
+      ? (messages) => {
+          // Fire-and-forget: a message must appear even if it cannot be saved, and a failed seal is
+          // not something to surface mid-conversation. The refuse-and-tell notice covers the honest case.
+          void history!.save(messages).catch(() => undefined);
+        }
+      : undefined,
+  });
   conversation.watch(() => {
     window?.webContents.send(EVENTS.chatChanged, conversation?.history() ?? []);
   });
 }
 
 void app.whenReady().then(async () => {
+  const userData = app.getPath('userData');
+  history = new HistoryStore(userData, safeStorage);
   session = new Session({
     channels: loopbackChannelFactory,
-    credentials: new CredentialStore(app.getPath('userData'), safeStorage),
+    credentials: new CredentialStore(userData, safeStorage),
     now: () => Math.floor(Date.now() / 1000),
   });
 
@@ -132,7 +162,7 @@ void app.whenReady().then(async () => {
   await window.loadFile(join(__dirname, '../renderer/index.html'));
 
   const status = await session.refresh();
-  attachConversation(session);
+  await attachConversation(session);
   window.webContents.send(EVENTS.sessionChanged, status);
 });
 

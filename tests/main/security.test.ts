@@ -198,6 +198,11 @@ function services(): IpcServices {
       body: 'hi',
       at: 0,
     }),
-    info: () => ({ version: '0.1.0', reachesOtherMachines: false, transport: 'loopback' }),
+    info: () => ({
+      version: '0.1.0',
+      reachesOtherMachines: false,
+      transport: 'loopback',
+      historyPersisted: true,
+    }),
   };
 }

@@ -57,6 +57,12 @@ export interface AppInfo {
   readonly reachesOtherMachines: boolean;
   /** The transport's own name, so a bug report says which one was in use. */
   readonly transport: string;
+  /**
+   * Whether message history is persisted across restarts. `false` when the OS offers no encryption
+   * backend: dig-chat runs the session in memory only rather than writing decrypted chat in the
+   * clear, and the UI says so (§5.2's refuse-and-tell posture, applied to history).
+   */
+  readonly historyPersisted: boolean;
 }
 
 /** Thrown when a renderer request is not one this process will act on. */

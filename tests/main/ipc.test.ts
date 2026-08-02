@@ -40,7 +40,12 @@ function services(): IpcServices {
       body: 'hi',
       at: 1,
     })),
-    info: vi.fn(() => ({ version: '0.1.0', reachesOtherMachines: false, transport: 'loopback' })),
+    info: vi.fn(() => ({
+      version: '0.1.0',
+      reachesOtherMachines: false,
+      transport: 'loopback',
+      historyPersisted: true,
+    })),
   };
 }
 

@@ -59,6 +59,8 @@ export const en = {
     '{count, plural, one {# message could not be opened} other {# messages could not be opened}}.',
   'chat.from': 'From {did}',
   'chat.to': 'To {did}',
+  'chat.historyEphemeral':
+    'This computer has no secure storage, so DIG Chat keeps this conversation only until you close it — it is not saved to disk in the clear.',
 
   'transport.localOnly.heading': 'Messages stay on this computer',
   'transport.localOnly.body':
@@ -94,6 +96,8 @@ export const en = {
     'This version of the DIG App does not offer identity operations yet.',
   'error.credentialStorageUnavailable':
     'DIG Chat could not store the pairing securely on this system, so it did not store it at all. You will need to pair again next time.',
+  'error.historyStorageUnavailable':
+    'DIG Chat could not store your message history securely on this system, so it is keeping it only for this session.',
   'error.emptyMessage': 'Type something to send.',
   'error.messageTooLong': 'That message is too long to send.',
   'error.sealFailed': 'DIG Chat refused to send: the DIG App did not return a sealed message.',

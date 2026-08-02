@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { x25519 } from '@noble/curves/ed25519';
 
-import { Conversation, SendError } from '../../../src/main/chat/conversation';
+import {
+  Conversation,
+  MAX_HISTORY_MESSAGES,
+  SendError,
+  boundHistory,
+  type ChatMessage,
+} from '../../../src/main/chat/conversation';
 import { sealReference, openReference } from '../../../src/main/identity/conformance';
 import { MAX_PLAINTEXT_BYTES, decodeEnvelope } from '../../../src/main/identity/envelope';
 import type { IdentityAgent, IdentitySummary } from '../../../src/main/identity/agent';
@@ -246,6 +252,128 @@ describe('receiving', () => {
 
     await conversation.send(THEM, 'hello');
     expect(watcher).toHaveBeenCalled();
+  });
+});
+
+describe('persistence', () => {
+  function storedMessage(over: Partial<ChatMessage> = {}): ChatMessage {
+    return { id: 'sent-1', direction: 'sent', peerDid: THEM.did, body: 'earlier', at: 1, ...over };
+  }
+
+  it('restores history handed to it at construction, oldest first', () => {
+    const restored = [
+      storedMessage({ id: 'sent-1', body: 'first' }),
+      storedMessage({ id: 'received-2', direction: 'received', body: 'second' }),
+    ];
+    const conversation = new Conversation({
+      agent: digAppDouble(ME_SECRET, ME),
+      transport: recordingTransport(),
+      self: ME,
+      clock: () => AT,
+      initialHistory: restored,
+    });
+    expect(conversation.history().map((m) => m.body)).toEqual(['first', 'second']);
+  });
+
+  it('re-sanitises restored history rather than trusting the file', () => {
+    // The store is a file; its contents are peer text again on the way in. A restored body carrying
+    // an override or a restored DID carrying a newline must be neutralised, not trusted.
+    const conversation = new Conversation({
+      agent: digAppDouble(ME_SECRET, ME),
+      transport: recordingTransport(),
+      self: ME,
+      clock: () => AT,
+      initialHistory: [
+        storedMessage({
+          direction: 'received',
+          peerDid: `did:chia:evil${String.fromCharCode(10)}FAKE`,
+          body: `x${String.fromCharCode(0x202e)}y`,
+        }),
+      ],
+    });
+    const [restored] = conversation.history();
+    expect(restored!.peerDid).not.toContain('\n');
+    expect(restored!.body).not.toContain(String.fromCharCode(0x202e));
+  });
+
+  it('persists the whole bounded history whenever it changes', async () => {
+    // The persister sees every recorded message, so closing and reopening loses nothing.
+    const saved: ChatMessage[][] = [];
+    const conversation = new Conversation({
+      agent: digAppDouble(ME_SECRET, ME),
+      transport: recordingTransport(),
+      self: ME,
+      clock: () => AT,
+      persist: (messages) => saved.push([...messages]),
+    });
+
+    await conversation.send(THEM, 'one');
+    await conversation.send(THEM, 'two');
+
+    expect(saved.at(-1)!.map((m) => m.body)).toEqual(['one', 'two']);
+  });
+
+  it('bounds what it holds and persists, evicting the oldest', async () => {
+    const saved: ChatMessage[][] = [];
+    const conversation = new Conversation({
+      agent: digAppDouble(ME_SECRET, ME),
+      transport: recordingTransport(),
+      self: ME,
+      clock: () => AT,
+      initialHistory: Array.from({ length: MAX_HISTORY_MESSAGES }, (_unused, index) =>
+        storedMessage({ id: `sent-${index}`, body: `old-${index}` }),
+      ),
+      persist: (messages) => saved.push([...messages]),
+    });
+
+    await conversation.send(THEM, 'the newest');
+
+    const history = conversation.history();
+    expect(history).toHaveLength(MAX_HISTORY_MESSAGES);
+    expect(history.at(-1)!.body).toBe('the newest');
+    expect(history[0]!.body).toBe('old-1'); // old-0 was evicted
+    expect(saved.at(-1)!).toHaveLength(MAX_HISTORY_MESSAGES);
+  });
+
+  it('runs in memory only when no persister is given', async () => {
+    // The no-encryption-backend degrade at this layer: without a persister the conversation still
+    // works, it simply keeps nothing across a restart.
+    const conversation = new Conversation({
+      agent: digAppDouble(ME_SECRET, ME),
+      transport: recordingTransport(),
+      self: ME,
+      clock: () => AT,
+    });
+    await expect(conversation.send(THEM, 'not saved anywhere')).resolves.toBeDefined();
+    expect(conversation.history()).toHaveLength(1);
+  });
+});
+
+describe('boundHistory', () => {
+  it('keeps everything when under the count', () => {
+    const few = [
+      { id: 'a', direction: 'sent', peerDid: THEM.did, body: 'x', at: 1 } as ChatMessage,
+    ];
+    expect(boundHistory(few)).toEqual(few);
+  });
+
+  it('drops the oldest beyond the byte cap', () => {
+    // A handful of enormous messages must still be bounded even when the count is small.
+    const huge = Array.from(
+      { length: 40 },
+      (_unused, index) =>
+        ({
+          id: `sent-${index}`,
+          direction: 'sent',
+          peerDid: THEM.did,
+          body: 'a'.repeat(50_000),
+          at: index,
+        }) as ChatMessage,
+    );
+    const bounded = boundHistory(huge);
+    expect(bounded.length).toBeLessThan(huge.length);
+    // What survives is a suffix — the newest.
+    expect(bounded.at(-1)!.id).toBe('sent-39');
   });
 });
 
