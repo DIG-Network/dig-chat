@@ -7,6 +7,7 @@
  * stored message" cannot drift between the readers that all depend on it.
  */
 
+// TODO(#2020/#2021): archive size-cap + finite-timestamp guard (scaffolding anchor).
 import type { ChatMessage, Direction } from './conversation';
 
 /** The two directions a stored message may carry, so an unknown value is rejected on load. */
