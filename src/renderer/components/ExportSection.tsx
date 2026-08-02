@@ -80,7 +80,9 @@ export function ExportSection(): JSX.Element {
         )}
 
         <button type="submit" disabled={!canSubmit} data-testid="export-submit">
-          <FormattedMessage id={exporting ? 'settings.export.exporting' : 'settings.export.submit'} />
+          <FormattedMessage
+            id={exporting ? 'settings.export.exporting' : 'settings.export.submit'}
+          />
         </button>
       </form>
 

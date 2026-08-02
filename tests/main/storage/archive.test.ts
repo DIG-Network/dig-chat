@@ -130,7 +130,10 @@ describe('imported peer text is re-sanitised (§5.5)', () => {
     const hostile = message({ body: 'safe\r[31m‮evil', peerDid: 'did:chia:‮bob' });
     const bytes = encodeArchive(PASSPHRASE, [hostile]);
     const [restored] = decodeArchive(PASSPHRASE, bytes);
-    expect(restored!.body).not.toMatch(/[\r‮]/);
-    expect(restored!.peerDid).not.toMatch(/[‮]/);
+    const RETURN = String.fromCharCode(0x0d);
+    const OVERRIDE = String.fromCharCode(0x202e);
+    expect(restored!.body).not.toContain(RETURN);
+    expect(restored!.body).not.toContain(OVERRIDE);
+    expect(restored!.peerDid).not.toContain(OVERRIDE);
   });
 });

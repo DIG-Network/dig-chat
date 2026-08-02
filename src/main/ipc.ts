@@ -170,7 +170,8 @@ export const MAX_PASSPHRASE_INPUT = 1_024;
  * @throws {InvalidRequestError} when it is not a bounded, non-empty string.
  */
 export function validatePassphrase(raw: unknown): string {
-  if (typeof raw !== 'string') throw new InvalidRequestError(CHANNELS.historyExport, 'not a string');
+  if (typeof raw !== 'string')
+    throw new InvalidRequestError(CHANNELS.historyExport, 'not a string');
   if (raw.length === 0) throw new InvalidRequestError(CHANNELS.historyExport, 'empty');
   if (raw.length > MAX_PASSPHRASE_INPUT) {
     throw new InvalidRequestError(CHANNELS.historyExport, 'longer than a passphrase can be');

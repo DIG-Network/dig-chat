@@ -2,12 +2,7 @@ import { useState } from 'react';
 import { FormattedMessage, useIntl } from 'react-intl';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-  clearAllHistory,
-  clearConversation,
-  type AppDispatch,
-  type RootState,
-} from '../store';
+import { clearAllHistory, clearConversation, type AppDispatch, type RootState } from '../store';
 import { ConfirmDialog } from './ConfirmDialog';
 
 /** A pending destructive action, held until the user confirms or dismisses it. */
@@ -64,7 +59,10 @@ export function HistoryDangerZone(): JSX.Element {
                 )}
                 onClick={() => setPending({ kind: 'conversation', peerDid })}
               >
-                <FormattedMessage id="settings.danger.clearConversation" values={{ did: peerDid }} />
+                <FormattedMessage
+                  id="settings.danger.clearConversation"
+                  values={{ did: peerDid }}
+                />
               </button>
             </li>
           ))}

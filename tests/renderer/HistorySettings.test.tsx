@@ -122,9 +122,7 @@ describe('import', () => {
     await user.type(screen.getByTestId('import-passphrase'), 'wrong');
     await user.click(screen.getByTestId('import-submit'));
 
-    expect(await screen.findByTestId('import-error')).toHaveTextContent(
-      'did not open the file',
-    );
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('did not open the file');
   });
 
   it('surfaces a not-an-archive failure distinctly', async () => {
@@ -162,9 +160,7 @@ describe('retention', () => {
   it('reflects a persisted window on load', async () => {
     installBridge({ getRetention: vi.fn(async () => 14) });
     renderSettings();
-    await waitFor(() =>
-      expect(screen.getByTestId('retention-days')).toHaveValue(14),
-    );
+    await waitFor(() => expect(screen.getByTestId('retention-days')).toHaveValue(14));
   });
 });
 

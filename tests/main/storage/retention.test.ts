@@ -44,7 +44,11 @@ describe('load', () => {
   });
 
   it('coerces a non-number stored value to the default', async () => {
-    await writeFile(join(dir, RETENTION_FILE), JSON.stringify({ v: 1, maxAgeDays: 'lots' }), 'utf8');
+    await writeFile(
+      join(dir, RETENTION_FILE),
+      JSON.stringify({ v: 1, maxAgeDays: 'lots' }),
+      'utf8',
+    );
     expect(await new RetentionStore(dir).load()).toBe(0);
   });
 

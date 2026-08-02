@@ -168,10 +168,13 @@ export const changeRetention = createAsyncThunk('ui/changeRetention', (days: num
 );
 
 /** Forget one peer's messages, then refresh the log from the main process. */
-export const clearConversation = createAsyncThunk('ui/clearConversation', async (peerDid: string) => {
-  await digChat().clearConversation(peerDid);
-  return digChat().getHistory();
-});
+export const clearConversation = createAsyncThunk(
+  'ui/clearConversation',
+  async (peerDid: string) => {
+    await digChat().clearConversation(peerDid);
+    return digChat().getHistory();
+  },
+);
 
 /** Forget the whole history, then refresh the log from the main process. */
 export const clearAllHistory = createAsyncThunk('ui/clearAllHistory', async () => {

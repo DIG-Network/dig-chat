@@ -28,7 +28,9 @@ describe('dedupe by id', () => {
   it('keeps the existing copy when an imported message shares its id', () => {
     const existing = [message({ id: 'x', body: 'the original' })];
     const imported = [message({ id: 'x', body: 'a different body, same id' })];
-    expect(mergeHistories(existing, imported)).toEqual([message({ id: 'x', body: 'the original' })]);
+    expect(mergeHistories(existing, imported)).toEqual([
+      message({ id: 'x', body: 'the original' }),
+    ]);
   });
 
   it('adds imported messages whose ids are absent', () => {

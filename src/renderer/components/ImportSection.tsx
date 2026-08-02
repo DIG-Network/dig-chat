@@ -59,7 +59,9 @@ export function ImportSection(): JSX.Element {
         />
 
         <button type="submit" disabled={!canSubmit} data-testid="import-submit">
-          <FormattedMessage id={importing ? 'settings.import.importing' : 'settings.import.submit'} />
+          <FormattedMessage
+            id={importing ? 'settings.import.importing' : 'settings.import.submit'}
+          />
         </button>
       </form>
 

@@ -34,7 +34,8 @@ export function mergeHistories(
 ): ChatMessage[] {
   const byId = new Map<string, ChatMessage>();
   // Existing first so it wins the id conflict: a later `set` for an id already present is skipped.
-  for (const message of existing) if (isStoredMessage(message)) byId.set(message.id, clean(message));
+  for (const message of existing)
+    if (isStoredMessage(message)) byId.set(message.id, clean(message));
   for (const message of imported) {
     if (isStoredMessage(message) && !byId.has(message.id)) byId.set(message.id, clean(message));
   }
