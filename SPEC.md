@@ -211,8 +211,14 @@ The DIG App performs the sealing; the plaintext MUST NOT be retained by it.
 
 Result: `{ "sender_did": "did:chia:…", "plaintext_b64": "<base64>" }`.
 
-`sender_did` MUST be the sender DID that AUTHENTICATED as part of the AEAD's associated data, not the
-one the header merely claims.
+`sender_did` is the DID the envelope header carries. Under **DIGCHAT1 suite 1** it is bound into the
+AEAD's associated data (§4.3) for transit integrity — a relay cannot re-address or re-attribute the
+envelope without breaking decryption — but it is an **UNVERIFIED claim about who sent the message**.
+Suite 1 is a NaCl sealed box (ephemeral-static X25519), which authenticates the recipient's key, not
+the sender's: anyone holding the recipient's published sealing key can seal a message carrying any
+`sender_did`. A consumer MUST NOT attribute identity or trust to `sender_did`. Sender authentication
+is a future **DIGCHAT1 suite 2** (tracked as dig_ecosystem #1940); until it ships, treat `sender_did`
+as an unverified label only.
 
 ### 3.5 Refusals
 
@@ -269,7 +275,9 @@ AAD = magic ‖ version ‖ suite ‖ sender_did_len ‖ sender_did ‖ recipien
 ```
 
 Binding these means a relay that re-addresses, re-attributes or replays an envelope under a different
-header produces a decryption failure rather than a delivered message.
+header produces a decryption failure rather than a delivered message. This is transit integrity, not
+sender authentication: it stops a relay altering `sender_did` in flight, but the original sealer chose
+`sender_did` freely and suite 1 does not prove it (§3.4, §6).
 
 ### 4.4 What the format does and does not hide
 
@@ -359,6 +367,12 @@ Stated here rather than implied by their absence.
 4. **The attestation is not verified.** dig-chat carries `attestation_b64` and does not check it.
 5. **History is not persisted.** Message history lives in memory for the session. Where decrypted
    plaintext may live at rest is a decision that has not been made.
+6. **The sender is not authenticated.** DIGCHAT1 suite 1 provides confidentiality to the recipient
+   only. `sender_did` travels in the header, bound into the AEAD for transit integrity (§4.3), but it
+   is an unverified claim: anyone with the recipient's published sealing key can seal a message under
+   any `sender_did`, so the field is impersonable. dig-chat therefore treats it as untrusted peer
+   text and never presents it as a verified identity. Sender authentication is a future **DIGCHAT1
+   suite 2** (dig_ecosystem #1940).
 
 ---
 
