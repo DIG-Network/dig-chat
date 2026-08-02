@@ -126,6 +126,20 @@ export class HistoryStore {
     await rm(this.path, { force: true });
     await rm(`${this.path}.tmp`, { force: true });
   }
+
+  /**
+   * Forget one peer's messages, leaving every other conversation intact.
+   *
+   * The argument is sanitised before matching, exactly as stored DIDs are, so a caller passing a DID
+   * with stray bytes still matches the neutralised form on disk rather than silently matching nothing.
+   * When the peer has no messages this rewrites the file unchanged — a harmless no-op, and simpler than
+   * a "did anything change" pre-check the caller would have to trust.
+   */
+  async clearConversation(peerDid: string): Promise<void> {
+    const target = sanitizeIdentifier(peerDid);
+    const remaining = (await this.load()).filter((message) => message.peerDid !== target);
+    await this.save(remaining);
+  }
 }
 
 /** Thrown when history cannot be stored safely. Storing it UNSAFELY is not the alternative. */
