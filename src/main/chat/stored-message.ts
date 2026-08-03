@@ -39,11 +39,17 @@ export function isStoredMessage(value: unknown): value is ChatMessage {
  * lived copied verbatim in four modules; it lives here once, beside {@link isStoredMessage}, so the
  * neutralisation cannot drift between the readers that all depend on it. The `id`, `direction` and
  * `at` fields are shape-checked (never rendered as peer text) and pass through unchanged.
+ *
+ * The result is rebuilt field-by-field rather than spread, so a tampered on-disk object carrying EXTRA
+ * keys yields a clean five-field {@link ChatMessage} — a whitelist is the right posture for the §5.5
+ * choke point on untrusted at-rest/archive input, and it keeps every reader identical.
  */
 export function sanitizeStoredMessage(message: ChatMessage): ChatMessage {
   return {
-    ...message,
+    id: message.id,
+    direction: message.direction,
     peerDid: sanitizeIdentifier(message.peerDid),
     body: sanitizePeerText(message.body),
+    at: message.at,
   };
 }
