@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const ja: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'あなたの DIG 識別情報で署名された、プライベートなメッセージ。',
   'app.version': 'バージョン {version}',
 
   'locale.label': '言語',
@@ -35,8 +33,6 @@ export const ja: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat は identity.attest、identity.seal、identity.unseal を要求しました。署名や支払いの許可を求めることは決してありません。',
 
-  'state.connected.you': 'あなたは {did} です',
-
   'pairing.problem.empty': 'DIG App が表示したコードを入力してください。',
   'pairing.problem.tooShort':
     'それは {found, plural, other {# 文字}} です。ペアリングコードは 8 文字です。',
@@ -51,7 +47,6 @@ export const ja: Catalog = {
   'chat.sending': '封印して送信しています…',
   'chat.empty':
     'まだメッセージはありません。送信するものはすべて、受信者の DIG 識別情報宛てに暗号化されます。',
-  'chat.unreadable': '{count, plural, other {# 件のメッセージを開けませんでした}}。',
   'chat.from': '{did} から',
   'chat.to': '{did} へ',
   'chat.historyEphemeral':
@@ -65,7 +60,6 @@ export const ja: Catalog = {
   'unpair.explanation':
     'これにより DIG Chat からペアリングが削除されます。DIG Chat のアクセスを完全に取り消すには、DIG App の ペアリング済みのアプリ を使用してください。',
 
-  'error.heading': 'うまくいきませんでした',
   'error.retry': 'もう一度試す',
   'error.appUnreachable': 'DIG App が応答しませんでした。実行中ですか？',
   'error.authRequired':
@@ -140,4 +134,7 @@ export const ja: Catalog = {
   'error.sealFailed':
     'DIG Chat は送信を拒否しました。DIG App が封印されたメッセージを返しませんでした。',
   'error.unknown': '問題が発生しました。もう一度お試しください。',
+  'error.dismiss': '閉じる',
+  'error.boundary.heading': 'DIG Chat で問題が発生しました',
+  'error.boundary.reload': 'DIG Chat を再読み込み',
 };

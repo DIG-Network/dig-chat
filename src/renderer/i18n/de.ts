@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const de: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Private Nachrichten, signiert mit deiner DIG-Identität.',
   'app.version': 'Version {version}',
 
   'locale.label': 'Sprache',
@@ -36,8 +34,6 @@ export const de: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat hat identity.attest, identity.seal und identity.unseal angefragt. Es bittet niemals um die Erlaubnis zu signieren oder auszugeben.',
 
-  'state.connected.you': 'Du bist {did}',
-
   'pairing.problem.empty': 'Gib den Code ein, den die DIG App dir gezeigt hat.',
   'pairing.problem.tooShort':
     'Das sind {found, plural, one {# Zeichen} other {# Zeichen}} — ein Kopplungscode hat acht.',
@@ -52,8 +48,6 @@ export const de: Catalog = {
   'chat.sending': 'Wird versiegelt und gesendet…',
   'chat.empty':
     'Noch keine Nachrichten. Alles, was du sendest, wird für die DIG-Identität des Empfängers verschlüsselt.',
-  'chat.unreadable':
-    '{count, plural, one {# Nachricht konnte nicht geöffnet werden} other {# Nachrichten konnten nicht geöffnet werden}}.',
   'chat.from': 'Von {did}',
   'chat.to': 'An {did}',
   'chat.historyEphemeral':
@@ -67,7 +61,6 @@ export const de: Catalog = {
   'unpair.explanation':
     'Dies entfernt die Kopplung aus DIG Chat. Um den Zugriff von DIG Chat endgültig zu widerrufen, verwende Gekoppelte Apps in der DIG App.',
 
-  'error.heading': 'Das hat nicht funktioniert',
   'error.retry': 'Erneut versuchen',
   'error.appUnreachable': 'Die DIG App hat nicht geantwortet. Läuft sie?',
   'error.authRequired':
@@ -142,4 +135,7 @@ export const de: Catalog = {
   'error.sealFailed':
     'DIG Chat hat das Senden verweigert: Die DIG App hat keine versiegelte Nachricht zurückgegeben.',
   'error.unknown': 'Etwas ist schiefgelaufen. Versuche es erneut.',
+  'error.dismiss': 'Schließen',
+  'error.boundary.heading': 'DIG Chat ist auf ein Problem gestoßen',
+  'error.boundary.reload': 'DIG Chat neu laden',
 };

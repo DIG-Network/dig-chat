@@ -30,8 +30,16 @@ export function ConfirmDialog({
   const cancelRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  // Land focus on the safe control, so Enter-on-open backs out rather than deletes.
-  useEffect(() => cancelRef.current?.focus(), []);
+  // Land focus on the safe control, so Enter-on-open backs out rather than deletes — and remember
+  // what had focus so it can be restored when the dialog closes. Without the restore, a keyboard user
+  // who cancels is dumped at the top of the document instead of back at the button they opened.
+  useEffect(() => {
+    const previouslyFocused = document.activeElement;
+    cancelRef.current?.focus();
+    return () => {
+      if (previouslyFocused instanceof HTMLElement) previouslyFocused.focus();
+    };
+  }, []);
 
   function onKeyDown(event: React.KeyboardEvent): void {
     if (event.key === 'Escape') {

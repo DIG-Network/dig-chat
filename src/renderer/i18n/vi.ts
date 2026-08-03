@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const vi: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Tin nhắn riêng tư, được ký bằng danh tính DIG của bạn.',
   'app.version': 'Phiên bản {version}',
 
   'locale.label': 'Ngôn ngữ',
@@ -35,8 +33,6 @@ export const vi: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat đã yêu cầu identity.attest, identity.seal và identity.unseal. Nó không bao giờ xin quyền ký hoặc chi tiêu.',
 
-  'state.connected.you': 'Bạn là {did}',
-
   'pairing.problem.empty': 'Nhập mã mà DIG App đã hiển thị cho bạn.',
   'pairing.problem.tooShort':
     'Đó là {found, plural, other {# ký tự}} — một mã ghép nối có tám ký tự.',
@@ -51,7 +47,6 @@ export const vi: Catalog = {
   'chat.sending': 'Đang niêm phong và gửi…',
   'chat.empty':
     'Chưa có tin nhắn nào. Mọi thứ bạn gửi đều được mã hóa cho danh tính DIG của người nhận.',
-  'chat.unreadable': '{count, plural, other {# tin nhắn không thể mở được}}.',
   'chat.from': 'Từ {did}',
   'chat.to': 'Đến {did}',
   'chat.historyEphemeral':
@@ -65,7 +60,6 @@ export const vi: Catalog = {
   'unpair.explanation':
     'Thao tác này xóa ghép nối khỏi DIG Chat. Để thu hồi vĩnh viễn quyền truy cập của DIG Chat, hãy dùng Ứng dụng đã ghép nối trong DIG App.',
 
-  'error.heading': 'Điều đó không thành công',
   'error.retry': 'Thử lại',
   'error.appUnreachable': 'DIG App không phản hồi. Nó có đang chạy không?',
   'error.authRequired':
@@ -135,4 +129,7 @@ export const vi: Catalog = {
   'error.messageTooLong': 'Tin nhắn đó quá dài để gửi.',
   'error.sealFailed': 'DIG Chat đã từ chối gửi: DIG App không trả về tin nhắn đã niêm phong.',
   'error.unknown': 'Đã xảy ra sự cố. Hãy thử lại.',
+  'error.dismiss': 'Bỏ qua',
+  'error.boundary.heading': 'DIG Chat đã gặp sự cố',
+  'error.boundary.reload': 'Tải lại DIG Chat',
 };

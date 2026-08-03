@@ -34,9 +34,9 @@ export function HistoryDangerZone(): JSX.Element {
 
   return (
     <section className="settings-section settings-section--danger" aria-labelledby="danger-heading">
-      <h2 id="danger-heading">
+      <h3 id="danger-heading">
         <FormattedMessage id="settings.danger.heading" />
-      </h2>
+      </h3>
       <p>
         <FormattedMessage id="settings.danger.body" />
       </p>

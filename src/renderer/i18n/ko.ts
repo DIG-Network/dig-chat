@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const ko: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': '당신의 DIG 신원으로 서명된 비공개 메시지.',
   'app.version': '버전 {version}',
 
   'locale.label': '언어',
@@ -35,8 +33,6 @@ export const ko: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat은 identity.attest, identity.seal, identity.unseal을 요청했습니다. 서명하거나 지출할 권한은 절대 요청하지 않습니다.',
 
-  'state.connected.you': '당신은 {did}입니다',
-
   'pairing.problem.empty': 'DIG App이 보여준 코드를 입력하세요.',
   'pairing.problem.tooShort':
     '그것은 {found, plural, other {#자}}입니다 — 페어링 코드는 여덟 자입니다.',
@@ -50,7 +46,6 @@ export const ko: Catalog = {
   'chat.send': '보내기',
   'chat.sending': '봉인하고 보내는 중…',
   'chat.empty': '아직 메시지가 없습니다. 보내는 모든 것은 받는 사람의 DIG 신원으로 암호화됩니다.',
-  'chat.unreadable': '{count, plural, other {#개의 메시지를 열 수 없습니다}}.',
   'chat.from': '{did} 님으로부터',
   'chat.to': '{did} 님에게',
   'chat.historyEphemeral':
@@ -64,7 +59,6 @@ export const ko: Catalog = {
   'unpair.explanation':
     '이 작업은 DIG Chat에서 페어링을 제거합니다. DIG Chat의 접근을 완전히 취소하려면 DIG App의 페어링된 앱을 사용하세요.',
 
-  'error.heading': '실패했습니다',
   'error.retry': '다시 시도',
   'error.appUnreachable': 'DIG App이 응답하지 않았습니다. 실행 중인가요?',
   'error.authRequired':
@@ -134,4 +128,7 @@ export const ko: Catalog = {
   'error.sealFailed':
     'DIG Chat이 전송을 거부했습니다: DIG App이 봉인된 메시지를 반환하지 않았습니다.',
   'error.unknown': '문제가 발생했습니다. 다시 시도하세요.',
+  'error.dismiss': '닫기',
+  'error.boundary.heading': 'DIG Chat에 문제가 발생했습니다',
+  'error.boundary.reload': 'DIG Chat 다시 불러오기',
 };

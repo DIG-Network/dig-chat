@@ -144,7 +144,7 @@ describe('import', () => {
 });
 
 describe('retention', () => {
-  it('enables retention and persists the day count', async () => {
+  it('enables retention and persists the day count when the field is committed', async () => {
     const bridge = installBridge();
     renderSettings();
     const user = userEvent.setup();
@@ -152,9 +152,28 @@ describe('retention', () => {
     await user.click(screen.getByTestId('retention-enable'));
     const days = screen.getByTestId('retention-days');
     await user.clear(days);
-    await user.type(days, '30');
+    // The field is a draft — it commits on Enter (or blur), not on each keystroke.
+    await user.type(days, '45{Enter}');
 
-    await waitFor(() => expect(bridge.setRetention).toHaveBeenCalledWith(30));
+    await waitFor(() => expect(bridge.setRetention).toHaveBeenCalledWith(45));
+  });
+
+  it('keeps the previous window when the field is cleared, rather than turning retention off', async () => {
+    // Clearing the field used to parse to 0 mid-edit — "off" — which unmounted the field being
+    // typed into. An empty draft must commit nothing and restore the last good value.
+    const bridge = installBridge({ getRetention: vi.fn(async () => 30) });
+    renderSettings();
+    const user = userEvent.setup();
+
+    const days = await screen.findByTestId('retention-days');
+    await waitFor(() => expect(days).toHaveValue(30));
+    vi.mocked(bridge.setRetention).mockClear();
+
+    await user.clear(days);
+    await user.tab(); // blur commits — an empty draft keeps the previous window
+
+    expect(bridge.setRetention).not.toHaveBeenCalled();
+    expect(screen.getByTestId('retention-days')).toHaveValue(30);
   });
 
   it('reflects a persisted window on load', async () => {
@@ -190,6 +209,24 @@ describe('danger zone', () => {
 
     expect(bridge.clearAllHistory).not.toHaveBeenCalled();
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+  });
+
+  it('returns focus to the button that opened the confirm after it closes', async () => {
+    // A keyboard user who cancels must land back on the control they opened, not at the top of the
+    // page (WCAG 2.4.3 focus order).
+    installBridge();
+    renderSettings({ messages: [message()] });
+    const user = userEvent.setup();
+
+    const clearAll = screen.getByTestId('clear-all');
+    clearAll.focus();
+    await user.click(clearAll);
+
+    const dialog = await screen.findByRole('dialog');
+    await user.click(within(dialog).getByTestId('confirm-no'));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(clearAll).toHaveFocus();
   });
 
   it('clears all history after a confirm', async () => {

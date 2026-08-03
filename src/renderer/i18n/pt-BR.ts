@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const ptBR: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Mensagens privadas, assinadas pela sua identidade DIG.',
   'app.version': 'Versão {version}',
 
   'locale.label': 'Idioma',
@@ -36,8 +34,6 @@ export const ptBR: Catalog = {
   'state.identityUnsupported.detail':
     'O DIG Chat pediu identity.attest, identity.seal e identity.unseal. Ele nunca pede permissão para assinar ou gastar.',
 
-  'state.connected.you': 'Você é {did}',
-
   'pairing.problem.empty': 'Digite o código que o DIG App mostrou.',
   'pairing.problem.tooShort':
     'Isso é {found, plural, one {# caractere} other {# caracteres}} — um código de pareamento tem oito.',
@@ -52,8 +48,6 @@ export const ptBR: Catalog = {
   'chat.sending': 'Selando e enviando…',
   'chat.empty':
     'Ainda não há mensagens. Tudo que você envia é criptografado para a identidade DIG do destinatário.',
-  'chat.unreadable':
-    '{count, plural, one {# mensagem não pôde ser aberta} other {# mensagens não puderam ser abertas}}.',
   'chat.from': 'De {did}',
   'chat.to': 'Para {did}',
   'chat.historyEphemeral':
@@ -67,7 +61,6 @@ export const ptBR: Catalog = {
   'unpair.explanation':
     'Isso remove o pareamento do DIG Chat. Para revogar o acesso do DIG Chat de vez, use Aplicativos pareados no DIG App.',
 
-  'error.heading': 'Isso não funcionou',
   'error.retry': 'Tentar de novo',
   'error.appUnreachable': 'O DIG App não respondeu. Ele está em execução?',
   'error.authRequired':
@@ -138,4 +131,7 @@ export const ptBR: Catalog = {
   'error.messageTooLong': 'Essa mensagem é longa demais para enviar.',
   'error.sealFailed': 'O DIG Chat se recusou a enviar: o DIG App não retornou uma mensagem selada.',
   'error.unknown': 'Algo deu errado. Tente de novo.',
+  'error.dismiss': 'Dispensar',
+  'error.boundary.heading': 'O DIG Chat encontrou um problema',
+  'error.boundary.reload': 'Recarregar o DIG Chat',
 };

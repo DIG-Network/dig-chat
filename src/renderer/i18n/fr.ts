@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const fr: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Des messages privés, signés par votre identité DIG.',
   'app.version': 'Version {version}',
 
   'locale.label': 'Langue',
@@ -37,8 +35,6 @@ export const fr: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat a demandé identity.attest, identity.seal et identity.unseal. Il ne demande jamais l’autorisation de signer ou de dépenser.',
 
-  'state.connected.you': 'Vous êtes {did}',
-
   'pairing.problem.empty': 'Saisissez le code que la DIG App vous a montré.',
   'pairing.problem.tooShort':
     'Cela fait {found, plural, one {# caractère} other {# caractères}} — un code d’appairage en compte huit.',
@@ -53,8 +49,6 @@ export const fr: Catalog = {
   'chat.sending': 'Scellement et envoi…',
   'chat.empty':
     'Aucun message pour l’instant. Tout ce que vous envoyez est chiffré pour l’identité DIG du destinataire.',
-  'chat.unreadable':
-    '{count, plural, one {# message n’a pas pu être ouvert} other {# messages n’ont pas pu être ouverts}}.',
   'chat.from': 'De {did}',
   'chat.to': 'À {did}',
   'chat.historyEphemeral':
@@ -68,7 +62,6 @@ export const fr: Catalog = {
   'unpair.explanation':
     'Cela supprime l’appairage de DIG Chat. Pour révoquer définitivement l’accès de DIG Chat, utilisez Applications appairées dans la DIG App.',
 
-  'error.heading': 'Cela n’a pas fonctionné',
   'error.retry': 'Réessayer',
   'error.appUnreachable': 'La DIG App n’a pas répondu. Est-elle en cours d’exécution ?',
   'error.authRequired':
@@ -141,4 +134,7 @@ export const fr: Catalog = {
   'error.messageTooLong': 'Ce message est trop long pour être envoyé.',
   'error.sealFailed': 'DIG Chat a refusé d’envoyer : la DIG App n’a pas renvoyé de message scellé.',
   'error.unknown': 'Une erreur est survenue. Réessayez.',
+  'error.dismiss': 'Ignorer',
+  'error.boundary.heading': 'DIG Chat a rencontré un problème',
+  'error.boundary.reload': 'Recharger DIG Chat',
 };

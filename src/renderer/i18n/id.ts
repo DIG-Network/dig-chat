@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const id: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Pesan pribadi, ditandatangani oleh identitas DIG Anda.',
   'app.version': 'Versi {version}',
 
   'locale.label': 'Bahasa',
@@ -37,8 +35,6 @@ export const id: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat meminta identity.attest, identity.seal, dan identity.unseal. Ia tidak pernah meminta izin untuk menandatangani atau membelanjakan.',
 
-  'state.connected.you': 'Anda adalah {did}',
-
   'pairing.problem.empty': 'Ketik kode yang ditunjukkan DIG App kepada Anda.',
   'pairing.problem.tooShort':
     'Itu {found, plural, other {# karakter}} — kode pemasangan berisi delapan.',
@@ -52,7 +48,6 @@ export const id: Catalog = {
   'chat.send': 'Kirim',
   'chat.sending': 'Menyegel dan mengirim…',
   'chat.empty': 'Belum ada pesan. Apa pun yang Anda kirim dienkripsi ke identitas DIG penerima.',
-  'chat.unreadable': '{count, plural, other {# pesan tidak dapat dibuka}}.',
   'chat.from': 'Dari {did}',
   'chat.to': 'Kepada {did}',
   'chat.historyEphemeral':
@@ -66,7 +61,6 @@ export const id: Catalog = {
   'unpair.explanation':
     'Ini menghapus pemasangan dari DIG Chat. Untuk mencabut akses DIG Chat selamanya, gunakan Aplikasi terpasang di DIG App.',
 
-  'error.heading': 'Itu tidak berhasil',
   'error.retry': 'Coba lagi',
   'error.appUnreachable': 'DIG App tidak menjawab. Apakah ia berjalan?',
   'error.authRequired':
@@ -136,4 +130,7 @@ export const id: Catalog = {
   'error.messageTooLong': 'Pesan itu terlalu panjang untuk dikirim.',
   'error.sealFailed': 'DIG Chat menolak mengirim: DIG App tidak mengembalikan pesan yang tersegel.',
   'error.unknown': 'Ada yang salah. Coba lagi.',
+  'error.dismiss': 'Tutup',
+  'error.boundary.heading': 'DIG Chat mengalami masalah',
+  'error.boundary.reload': 'Muat ulang DIG Chat',
 };

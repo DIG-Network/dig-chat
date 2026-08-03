@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const zhCN: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': '由你的 DIG 身份签名的私密消息。',
   'app.version': '版本 {version}',
 
   'locale.label': '语言',
@@ -32,8 +30,6 @@ export const zhCN: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat 请求了 identity.attest、identity.seal 和 identity.unseal。它从不请求签名或支出的权限。',
 
-  'state.connected.you': '你是 {did}',
-
   'pairing.problem.empty': '请输入 DIG App 向你显示的验证码。',
   'pairing.problem.tooShort': '那是 {found, plural, other {# 个字符}}——配对码有八位。',
   'pairing.problem.tooLong': '那是 {found, plural, other {# 个字符}}——配对码有八位。',
@@ -45,7 +41,6 @@ export const zhCN: Catalog = {
   'chat.send': '发送',
   'chat.sending': '正在封装并发送…',
   'chat.empty': '还没有消息。你发送的任何内容都会为收件人的 DIG 身份加密。',
-  'chat.unreadable': '{count, plural, other {有 # 条消息无法打开}}。',
   'chat.from': '来自 {did}',
   'chat.to': '发给 {did}',
   'chat.historyEphemeral':
@@ -59,7 +54,6 @@ export const zhCN: Catalog = {
   'unpair.explanation':
     '这会从 DIG Chat 中移除该配对。若要彻底撤销 DIG Chat 的访问权限，请在 DIG App 中使用 已配对的应用。',
 
-  'error.heading': '操作未成功',
   'error.retry': '重试',
   'error.appUnreachable': 'DIG App 未响应。它在运行吗？',
   'error.authRequired': 'DIG App 不再识别此配对。它可能已被撤销——请用新的验证码重新配对。',
@@ -125,4 +119,7 @@ export const zhCN: Catalog = {
   'error.messageTooLong': '该消息过长，无法发送。',
   'error.sealFailed': 'DIG Chat 拒绝发送：DIG App 未返回已封装的消息。',
   'error.unknown': '出了点问题。请重试。',
+  'error.dismiss': '关闭',
+  'error.boundary.heading': 'DIG Chat 遇到问题',
+  'error.boundary.reload': '重新加载 DIG Chat',
 };

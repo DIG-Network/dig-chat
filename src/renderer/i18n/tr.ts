@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const tr: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'DIG kimliğinizle imzalanan özel mesajlar.',
   'app.version': 'Sürüm {version}',
 
   'locale.label': 'Dil',
@@ -36,8 +34,6 @@ export const tr: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat, identity.attest, identity.seal ve identity.unseal istedi. İmzalama veya harcama izni asla istemez.',
 
-  'state.connected.you': 'Siz {did} kişisisiniz',
-
   'pairing.problem.empty': 'DIG App’in size gösterdiği kodu yazın.',
   'pairing.problem.tooShort':
     'Bu {found, plural, one {# karakter} other {# karakter}} — bir eşleştirme kodu sekiz karakterdir.',
@@ -51,7 +47,6 @@ export const tr: Catalog = {
   'chat.send': 'Gönder',
   'chat.sending': 'Mühürleniyor ve gönderiliyor…',
   'chat.empty': 'Henüz mesaj yok. Gönderdiğiniz her şey, alıcının DIG kimliğine şifrelenir.',
-  'chat.unreadable': '{count, plural, one {# mesaj açılamadı} other {# mesaj açılamadı}}.',
   'chat.from': 'Gönderen: {did}',
   'chat.to': 'Alıcı: {did}',
   'chat.historyEphemeral':
@@ -65,7 +60,6 @@ export const tr: Catalog = {
   'unpair.explanation':
     'Bu, eşleştirmeyi DIG Chat’ten kaldırır. DIG Chat’in erişimini tamamen iptal etmek için DIG App’teki Eşleştirilmiş uygulamalar’ı kullanın.',
 
-  'error.heading': 'Bu işe yaramadı',
   'error.retry': 'Yeniden dene',
   'error.appUnreachable': 'DIG App yanıt vermedi. Çalışıyor mu?',
   'error.authRequired':
@@ -134,4 +128,7 @@ export const tr: Catalog = {
   'error.messageTooLong': 'Bu mesaj göndermek için çok uzun.',
   'error.sealFailed': 'DIG Chat göndermeyi reddetti: DIG App mühürlü bir mesaj döndürmedi.',
   'error.unknown': 'Bir şeyler ters gitti. Yeniden deneyin.',
+  'error.dismiss': 'Kapat',
+  'error.boundary.heading': 'DIG Chat bir sorunla karşılaştı',
+  'error.boundary.reload': "DIG Chat'i yeniden yükle",
 };

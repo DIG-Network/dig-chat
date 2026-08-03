@@ -38,9 +38,9 @@ export function ImportSection(): JSX.Element {
 
   return (
     <section className="settings-section" aria-labelledby="import-heading">
-      <h2 id="import-heading">
+      <h3 id="import-heading">
         <FormattedMessage id="settings.import.heading" />
-      </h2>
+      </h3>
       <p>
         <FormattedMessage id="settings.import.body" />
       </p>

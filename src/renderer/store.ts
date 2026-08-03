@@ -66,6 +66,18 @@ function messageIdOf(failure: unknown): string {
   return match?.[0] ?? 'error.unknown';
 }
 
+/**
+ * The message id for a rejected thunk, whichever way it rejected.
+ *
+ * A thunk that used `rejectWithValue` already carries the id as its payload; a thunk that simply threw
+ * carries the main process's error in the serialized `error.message`, which {@link messageIdOf} mines
+ * for an `error.*` id (and falls back to `error.unknown` rather than leaking an internal stack).
+ */
+function rejectedErrorId(action: { payload?: unknown; error?: { message?: string } }): string {
+  if (typeof action.payload === 'string') return action.payload;
+  return messageIdOf(action.error?.message);
+}
+
 export const loadSession = createAsyncThunk('ui/loadSession', async () => ({
   status: await digChat().getStatus(),
   appInfo: await digChat().getAppInfo(),
@@ -206,6 +218,11 @@ const slice = createSlice({
         state.appInfo = action.payload.appInfo;
         state.messages = action.payload.messages;
       })
+      // A failed first load leaves `status` at `null`, so the App shows a retry panel in place of the
+      // "Checking…" spinner rather than letting it hang forever (the spinner has no way to recover).
+      .addCase(loadSession.rejected, (state, action) => {
+        state.errorId = rejectedErrorId(action);
+      })
       .addCase(refreshSession.pending, (state) => {
         state.busy = 'refreshing';
       })
@@ -233,11 +250,17 @@ const slice = createSlice({
         state.status = action.payload;
         state.messages = [];
       })
+      .addCase(forgetPairing.rejected, (state, action) => {
+        state.errorId = rejectedErrorId(action);
+      })
       .addCase(initLocale.fulfilled, (state, action) => {
         state.locale = action.payload;
       })
       .addCase(changeLocale.fulfilled, (state, action) => {
         state.locale = action.payload;
+      })
+      .addCase(changeLocale.rejected, (state, action) => {
+        state.errorId = rejectedErrorId(action);
       })
       .addCase(sendMessage.pending, (state) => {
         state.busy = 'sending';
@@ -258,9 +281,10 @@ const slice = createSlice({
       .addCase(exportHistory.fulfilled, (state) => {
         state.busy = 'idle';
       })
-      .addCase(exportHistory.rejected, (state, action) => {
+      // The rejection is surfaced INLINE next to the export control (ExportSection reads the settled
+      // action), so it does not also raise the app-wide banner — one error, in one place.
+      .addCase(exportHistory.rejected, (state) => {
         state.busy = 'idle';
-        state.errorId = (action.payload as string | undefined) ?? 'error.unknown';
       })
       .addCase(importHistory.pending, (state) => {
         state.busy = 'importing';
@@ -270,21 +294,34 @@ const slice = createSlice({
         state.busy = 'idle';
         state.messages = action.payload.messages;
       })
-      .addCase(importHistory.rejected, (state, action) => {
+      // As with export, the import failure is shown INLINE in ImportSection (its own `error.archive*`
+      // id), not on the global banner, so the two settings controls report failures the same way.
+      .addCase(importHistory.rejected, (state) => {
         state.busy = 'idle';
-        state.errorId = (action.payload as string | undefined) ?? 'error.unknown';
       })
       .addCase(loadRetention.fulfilled, (state, action) => {
         state.retentionDays = action.payload;
       })
+      .addCase(loadRetention.rejected, (state, action) => {
+        state.errorId = rejectedErrorId(action);
+      })
       .addCase(changeRetention.fulfilled, (state, action) => {
         state.retentionDays = action.payload;
+      })
+      .addCase(changeRetention.rejected, (state, action) => {
+        state.errorId = rejectedErrorId(action);
       })
       .addCase(clearConversation.fulfilled, (state, action) => {
         state.messages = action.payload;
       })
+      .addCase(clearConversation.rejected, (state, action) => {
+        state.errorId = rejectedErrorId(action);
+      })
       .addCase(clearAllHistory.fulfilled, (state, action) => {
         state.messages = action.payload;
+      })
+      .addCase(clearAllHistory.rejected, (state, action) => {
+        state.errorId = rejectedErrorId(action);
       });
   },
 });
