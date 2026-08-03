@@ -135,6 +135,8 @@ export const fr: Catalog = {
     'Ce fichier d’historique a été créé par une version plus récente de DIG Chat. Mettez à jour et réessayez.',
   'error.archiveDecrypt':
     'Cette phrase secrète n’a pas ouvert le fichier, ou le fichier est endommagé.',
+  'error.archiveTooLarge':
+    'Ce fichier est trop volumineux pour être un fichier d’historique DIG Chat.',
   'error.emptyMessage': 'Saisissez quelque chose à envoyer.',
   'error.messageTooLong': 'Ce message est trop long pour être envoyé.',
   'error.sealFailed': 'DIG Chat a refusé d’envoyer : la DIG App n’a pas renvoyé de message scellé.',

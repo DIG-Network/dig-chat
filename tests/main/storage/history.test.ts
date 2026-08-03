@@ -137,6 +137,23 @@ describe('history at rest', () => {
     expect(await new HistoryStore(directory, sealer).load()).toEqual([message()]);
   });
 
+  it('drops a NaN-timestamped entry on load, keeping the finite ones (#2021)', async () => {
+    // A tampered file with a non-finite `at` must not survive a read: it would sort unstably and be
+    // silently pruned by retention. `JSON.stringify(NaN)` is `null`, so the entry is written with a
+    // literal `null` timestamp — the exact shape a hand-edited file carries — and must be dropped.
+    const sealer = xorSealer();
+    await writeFile(
+      join(directory, HISTORY_FILE),
+      sealer.encryptString(
+        JSON.stringify({
+          v: 1,
+          messages: [message({ id: 'good-1' }), { ...message({ id: 'nan-1' }), at: Number.NaN }],
+        }),
+      ),
+    );
+    expect(await new HistoryStore(directory, sealer).load()).toEqual([message({ id: 'good-1' })]);
+  });
+
   it('returns an empty history for every unreadable case, never throwing', async () => {
     const store = new HistoryStore(directory, xorSealer());
     const path = join(directory, HISTORY_FILE);

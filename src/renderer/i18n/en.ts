@@ -143,6 +143,7 @@ export const en = {
   'error.archiveVersion':
     'That history file was made by a newer version of DIG Chat. Update and try again.',
   'error.archiveDecrypt': 'That passphrase did not open the file, or the file is damaged.',
+  'error.archiveTooLarge': 'That file is too large to be a DIG Chat history file.',
   'error.emptyMessage': 'Type something to send.',
   'error.messageTooLong': 'That message is too long to send.',
   'error.sealFailed': 'DIG Chat refused to send: the DIG App did not return a sealed message.',

@@ -7,7 +7,6 @@
  * stored message" cannot drift between the readers that all depend on it.
  */
 
-// TODO(#2020/#2021): archive size-cap + finite-timestamp guard (scaffolding anchor).
 import type { ChatMessage, Direction } from './conversation';
 
 /** The two directions a stored message may carry, so an unknown value is rejected on load. */
@@ -23,6 +22,9 @@ export function isStoredMessage(value: unknown): value is ChatMessage {
     DIRECTIONS.includes(direction as Direction) &&
     typeof peerDid === 'string' &&
     typeof body === 'string' &&
-    typeof at === 'number'
+    // `at` is the sort key (history is ordered by `(at, id)`) and the retention cut-off: a non-finite
+    // timestamp (NaN/±Infinity) sorts unstably and is silently pruned, so it is rejected here rather
+    // than admitted as a "number" (#2021). Real messages always carry a finite epoch-millis stamp.
+    Number.isFinite(at)
   );
 }

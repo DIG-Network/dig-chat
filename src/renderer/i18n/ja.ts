@@ -134,6 +134,7 @@ export const ja: Catalog = {
     'その履歴ファイルは新しいバージョンの DIG Chat で作成されました。更新してもう一度お試しください。',
   'error.archiveDecrypt':
     'そのパスフレーズではファイルを開けなかったか、ファイルが破損しています。',
+  'error.archiveTooLarge': 'そのファイルは DIG Chat の履歴ファイルにしては大きすぎます。',
   'error.emptyMessage': '送信する内容を入力してください。',
   'error.messageTooLong': 'そのメッセージは長すぎて送信できません。',
   'error.sealFailed':

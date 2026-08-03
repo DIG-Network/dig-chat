@@ -120,6 +120,7 @@ export const zhCN: Catalog = {
   'error.archiveFormat': '该文件不是 DIG Chat 历史记录文件。',
   'error.archiveVersion': '该历史记录文件是由更新版本的 DIG Chat 创建的。请更新后重试。',
   'error.archiveDecrypt': '该口令短语未能打开文件，或文件已损坏。',
+  'error.archiveTooLarge': '该文件太大，不可能是 DIG Chat 历史文件。',
   'error.emptyMessage': '请输入要发送的内容。',
   'error.messageTooLong': '该消息过长，无法发送。',
   'error.sealFailed': 'DIG Chat 拒绝发送：DIG App 未返回已封装的消息。',

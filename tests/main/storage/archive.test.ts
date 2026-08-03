@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  ARCHIVE_MAX_BYTES,
   ArchiveDecryptError,
   ArchiveFormatError,
+  ArchiveTooLargeError,
   ArchiveUnsupportedVersionError,
   decodeArchive,
   encodeArchive,
@@ -99,6 +101,29 @@ describe('a decode failure is total, and gives nothing away', () => {
   });
 });
 
+describe('the file size is capped before any parse (#2020)', () => {
+  it('rejects a buffer larger than the cap as ArchiveTooLargeError, before JSON.parse', () => {
+    // The oversize buffer is deliberately NOT valid JSON: if the guard fired AFTER the parse it would
+    // surface as an ArchiveFormatError instead, so demanding the too-large error proves the cap runs
+    // first — a hostile multi-GB file never reaches JSON.parse and cannot OOM the main process.
+    const oversize = Buffer.alloc(ARCHIVE_MAX_BYTES + 1, 0x7b); // 0x7b = '{', never a complete JSON doc
+    expect(() => decodeArchive(PASSPHRASE, oversize)).toThrow(ArchiveTooLargeError);
+  });
+
+  it('lets a buffer at the cap proceed to normal parsing', () => {
+    // A buffer exactly at the cap is under the limit, so the guard passes and the ordinary format check
+    // takes over: this junk is not a container, so it fails as a format error, not a size error.
+    const atCap = Buffer.alloc(ARCHIVE_MAX_BYTES, 0x7b);
+    expect(() => decodeArchive(PASSPHRASE, atCap)).toThrow(ArchiveFormatError);
+  });
+
+  it('round-trips a normal archive well under the cap', () => {
+    const bytes = encodeArchive(PASSPHRASE, [message()]);
+    expect(bytes.length).toBeLessThan(ARCHIVE_MAX_BYTES);
+    expect(decodeArchive(PASSPHRASE, bytes)).toEqual([message()]);
+  });
+});
+
 describe('the container is validated before any key work', () => {
   it('rejects a missing or wrong magic as a format error', () => {
     const parsed = container(encodeArchive(PASSPHRASE, [message()]));
@@ -135,5 +160,16 @@ describe('imported peer text is re-sanitised (§5.5)', () => {
     expect(restored!.body).not.toContain(RETURN);
     expect(restored!.body).not.toContain(OVERRIDE);
     expect(restored!.peerDid).not.toContain(OVERRIDE);
+  });
+
+  it('drops a NaN-timestamped entry on import, keeping the finite ones (#2021)', () => {
+    // A hand-crafted archive whose author skipped the finite-timestamp check must not smuggle a
+    // non-finite `at` into history on the way in — the reader re-runs the shape check and drops it.
+    const good = message({ id: 'good-1' });
+    const bytes = encodeArchive(PASSPHRASE, [
+      good,
+      { ...message({ id: 'nan-1' }), at: Number.NaN },
+    ]);
+    expect(decodeArchive(PASSPHRASE, bytes)).toEqual([good]);
   });
 });

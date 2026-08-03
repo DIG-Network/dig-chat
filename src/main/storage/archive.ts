@@ -39,6 +39,18 @@ export const ARCHIVE_MAGIC = 'DIGCHAT-ARCHIVE';
 /** The only container version this build writes and reads. */
 export const ARCHIVE_VERSION = 1;
 
+/**
+ * The largest archive this build will read into memory (#2020).
+ *
+ * A history is bounded to ≤1000 messages / ≤1 MB plaintext (SPEC §5.4); the container adds only a
+ * small header plus base64's ~33% overhead, so a legitimate archive is comfortably under 2 MiB. The
+ * cap is set to 4 MiB — generous headroom for the header and encoding over that ceiling — so an honest
+ * export always fits while a hostile or corrupt multi-GB `.digchat` file is refused BEFORE `JSON.parse`
+ * rather than being read whole into the main process and OOM-ing it. The bound is enforced twice: on
+ * the raw bytes here (a pure guard), and on the file's `stat` size before it is ever read (index.ts).
+ */
+export const ARCHIVE_MAX_BYTES = 4 * 1_024 * 1_024;
+
 /** Argon2id work factors (SPEC §5.7). Interactive-desktop tuned: 64 MiB, three passes, single lane. */
 const KDF = { algo: 'argon2id', m: 65_536, t: 3, p: 1 } as const;
 
@@ -114,18 +126,25 @@ export function encodeArchive(passphrase: string, messages: readonly ChatMessage
 /**
  * Open a `DIGCHAT-ARCHIVE` container with `passphrase`, returning its messages re-sanitised.
  *
- * Fail-closed, in order: the bytes must parse and carry the magic ({@link ArchiveFormatError}), then
+ * Fail-closed, in order: the bytes must be within the size cap ({@link ArchiveTooLargeError}) so a
+ * hostile file cannot OOM the process before it is even parsed, then parse and carry the magic
+ * ({@link ArchiveFormatError}), then
  * be a version this build understands ({@link ArchiveUnsupportedVersionError}), then authenticate under
  * the derived key ({@link ArchiveDecryptError} — the ONE signal that covers both a wrong passphrase and
  * a tampered file). Only then is the plaintext parsed, and every entry is re-run through the peer-text
  * sanitiser (§5.5) because the archive is an untrusted file. Any failure throws; nothing partial is
  * ever returned.
  *
+ * @throws {ArchiveTooLargeError} the bytes exceed {@link ARCHIVE_MAX_BYTES} — refused before any parse.
  * @throws {ArchiveFormatError} the bytes are not a well-formed archive container.
  * @throws {ArchiveUnsupportedVersionError} the container version is not one this build reads.
  * @throws {ArchiveDecryptError} authentication failed — wrong passphrase or corrupt/tampered file.
  */
 export function decodeArchive(passphrase: string, bytes: Buffer): ChatMessage[] {
+  // The size guard runs FIRST, before JSON.parse, so an oversize file is rejected without ever being
+  // materialised as a parsed value — the cheap check that stops a self-inflicted OOM (#2020).
+  if (bytes.length > ARCHIVE_MAX_BYTES) throw new ArchiveTooLargeError(bytes.length);
+
   const container = parseContainer(bytes);
   if (container.magic !== ARCHIVE_MAGIC) throw new ArchiveFormatError('not a DIG Chat archive');
   if (container.v !== ARCHIVE_VERSION) throw new ArchiveUnsupportedVersionError(container.v);
@@ -281,5 +300,23 @@ export class ArchiveDecryptError extends Error {
   constructor() {
     super('the passphrase is wrong or the archive is damaged');
     this.name = 'ArchiveDecryptError';
+  }
+}
+
+/**
+ * Thrown when the archive exceeds {@link ARCHIVE_MAX_BYTES} (#2020).
+ *
+ * A legitimate history is small (SPEC §5.4), so an over-cap file is malformed or hostile. Refusing it
+ * before `JSON.parse`/`readFile` keeps a multi-gigabyte `.digchat` from being read whole into the main
+ * process and OOM-ing it. The import is total — nothing is added — like every other archive failure.
+ */
+export class ArchiveTooLargeError extends Error {
+  readonly messageId = 'error.archiveTooLarge';
+
+  constructor(readonly byteLength: number) {
+    super(
+      `this archive is ${byteLength} bytes, larger than DIG Chat will read (${ARCHIVE_MAX_BYTES})`,
+    );
+    this.name = 'ArchiveTooLargeError';
   }
 }

@@ -6,7 +6,7 @@
  * is why this one file is excluded from the coverage floor while everything it assembles is not.
  */
 
-import { chmod, readFile, writeFile } from 'node:fs/promises';
+import { chmod, readFile, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { BrowserWindow, app, dialog, ipcMain, safeStorage, shell } from 'electron';
@@ -17,7 +17,12 @@ import { pruneAged } from './chat/retention';
 import { LoopbackTransport } from './transport/loopback';
 import { Session } from './session';
 import { CredentialStore } from './storage/credentials';
-import { decodeArchive, encodeArchive } from './storage/archive';
+import {
+  ARCHIVE_MAX_BYTES,
+  ArchiveTooLargeError,
+  decodeArchive,
+  encodeArchive,
+} from './storage/archive';
 import { HistoryStore } from './storage/history';
 import { LocaleStore } from './storage/locale';
 import { RetentionStore } from './storage/retention';
@@ -189,6 +194,12 @@ async function importHistoryFrom(
   const chosen = filePaths[0];
   const current = conversation?.history() ?? (await history?.load()) ?? [];
   if (canceled || !chosen) return { added: 0, total: current.length };
+
+  // Reject an over-cap file by its `stat` size BEFORE reading it, so a hostile multi-gigabyte
+  // `.digchat` is never pulled into memory at all (#2020). `decodeArchive` re-checks the same bound on
+  // the raw bytes; this stat-guard is the earlier, cheaper line that avoids the read entirely.
+  const { size } = await stat(chosen);
+  if (size > ARCHIVE_MAX_BYTES) throw new ArchiveTooLargeError(size);
 
   const imported = decodeArchive(passphrase, await readFile(chosen));
   const added = countNewMessages(current, imported);

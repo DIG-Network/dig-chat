@@ -132,6 +132,8 @@ export const ptBR: Catalog = {
   'error.archiveVersion':
     'Esse arquivo de histórico foi criado por uma versão mais nova do DIG Chat. Atualize e tente novamente.',
   'error.archiveDecrypt': 'Essa frase secreta não abriu o arquivo, ou o arquivo está danificado.',
+  'error.archiveTooLarge':
+    'Esse arquivo é grande demais para ser um arquivo de histórico do DIG Chat.',
   'error.emptyMessage': 'Digite algo para enviar.',
   'error.messageTooLong': 'Essa mensagem é longa demais para enviar.',
   'error.sealFailed': 'O DIG Chat se recusou a enviar: o DIG App não retornou uma mensagem selada.',

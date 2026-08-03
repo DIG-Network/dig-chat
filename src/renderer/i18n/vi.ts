@@ -130,6 +130,7 @@ export const vi: Catalog = {
   'error.archiveVersion':
     'Tệp lịch sử đó được tạo bởi một phiên bản DIG Chat mới hơn. Hãy cập nhật và thử lại.',
   'error.archiveDecrypt': 'Cụm mật khẩu đó không mở được tệp, hoặc tệp bị hỏng.',
+  'error.archiveTooLarge': 'Tệp đó quá lớn để là một tệp lịch sử DIG Chat.',
   'error.emptyMessage': 'Hãy nhập nội dung để gửi.',
   'error.messageTooLong': 'Tin nhắn đó quá dài để gửi.',
   'error.sealFailed': 'DIG Chat đã từ chối gửi: DIG App không trả về tin nhắn đã niêm phong.',

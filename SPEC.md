@@ -430,20 +430,29 @@ archive is derived from something the user KNOWS, not from the identity keypair.
   authentication tag rather than silently taking effect.
 - **The plaintext** is UTF-8 `JSON.stringify({ v: 1, messages })`, the same `ChatMessage` list §5.4
   stores.
-- **Decode is fail-closed and total**, in order: parse JSON and check the magic (else a format error);
-  check `v === 1` (else an unsupported-version error); derive the key and open the AEAD (any
-  authentication failure is a single decrypt error). Only then is the payload parsed. **A wrong
-  passphrase and a corrupt/tampered file are INDISTINGUISHABLE** — one authentication failure, so the
-  archive is no oracle for guessing the passphrase. Any failure throws and the caller imports nothing;
+- **Decode is fail-closed and total**, in order: reject bytes larger than the **4 MiB size cap** (a
+  too-large error) BEFORE any parse, so a hostile or corrupt file cannot be read whole into the main
+  process and exhaust memory — a legitimate archive is far under the cap (§5.4 bounds history to ≤1000
+  messages / ≤1 MB plaintext, plus a small header and base64 overhead); then parse JSON and check the
+  magic (else a format error); check `v === 1` (else an unsupported-version error); derive the key and
+  open the AEAD (any authentication failure is a single decrypt error). Only then is the payload parsed.
+  **A wrong passphrase and a corrupt/tampered file are INDISTINGUISHABLE** — one authentication failure,
+  so the archive is no oracle for guessing the passphrase. The same size cap is enforced on the file's
+  `stat` size before it is read from disk at all. Any failure throws and the caller imports nothing;
   there is never a partial import.
+- **A stored message's `at` MUST be a finite number.** The shape check that gates every untrusted read
+  (on-disk store, archive, merge) rejects a non-finite timestamp (`NaN`/`±Infinity`): `at` is the sort
+  key and the retention cut-off, so a non-finite value would sort unstably and be silently pruned. Such
+  an entry is dropped on load and on import.
 - **Imported peer text is re-sanitised** through §5.5 on the way in, because an archive is an
   untrusted file exactly as the on-disk store is.
 - **Import merges** into the current history: messages are deduplicated by `id` (the existing copy
   wins, so re-importing is idempotent), the union is re-sanitised, sorted by `(at ascending, then id
 lexicographic)`, and re-bounded by the §5.4 limits.
 
-The three failure classes surface to the user as distinct messages: not-an-archive, unsupported
-version, and wrong-passphrase-or-damaged. The main process owns the file dialogs, the encryption, and
+The four failure classes surface to the user as distinct messages: too-large, not-an-archive,
+unsupported version, and wrong-passphrase-or-damaged. The main process owns the file dialogs, the
+encryption, and
 the `0600` write; the renderer supplies only the passphrase and never sees the archive bytes or the
 file path until after a successful write.
 
