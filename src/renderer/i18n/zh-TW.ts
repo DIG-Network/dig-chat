@@ -117,6 +117,7 @@ export const zhTW: Catalog = {
   'error.emptyMessage': '請輸入要傳送的內容。',
   'error.messageTooLong': '該訊息過長，無法傳送。',
   'error.sealFailed': 'DIG Chat 拒絕傳送：DIG App 未回傳已封裝的訊息。',
+  'error.notConnected': 'DIG Chat 尚未連線。請先與你的 DIG App 配對後再傳送。',
   'error.unknown': '出了點問題。請再試一次。',
   'error.dismiss': '關閉',
   'error.boundary.heading': 'DIG Chat 遇到問題',

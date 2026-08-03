@@ -198,7 +198,11 @@ describe('decodeEnvelope enforces the write-path bounds on the READ path (#2030)
   });
 
   it('refuses a recipient DID longer than MAX_DID_BYTES', () => {
-    const wire = craftWire({ senderDidLen: 5, recipientDidLen: MAX_DID_BYTES + 1, ciphertextLen: 16 });
+    const wire = craftWire({
+      senderDidLen: 5,
+      recipientDidLen: MAX_DID_BYTES + 1,
+      ciphertextLen: 16,
+    });
     expect(() => decodeEnvelope(wire)).toThrow(EnvelopeError);
   });
 

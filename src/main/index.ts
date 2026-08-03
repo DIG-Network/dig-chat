@@ -11,7 +11,7 @@ import { join } from 'node:path';
 
 import { BrowserWindow, app, dialog, ipcMain, safeStorage, shell } from 'electron';
 
-import { Conversation, type ChatMessage } from './chat/conversation';
+import { Conversation, SendError, type ChatMessage } from './chat/conversation';
 import { countNewMessages, mergeHistories } from './chat/history-merge';
 import { pruneAged } from './chat/retention';
 import { LoopbackTransport } from './transport/loopback';
@@ -120,7 +120,7 @@ function servicesFor(live: Session): IpcServices {
     send: async (request) => {
       const identity = live.currentIdentity();
       const active = conversation;
-      if (!identity || !active) throw new Error('not connected');
+      if (!identity || !active) throw new SendError('error.notConnected', 'not connected');
       // The recipient's sealing key is not discoverable yet — the DIG App attests our own, and there
       // is no directory to look anyone else's up in. Sending to ourselves is the loop the MVP can
       // honestly close; `SPEC.md` §6 records the gap.

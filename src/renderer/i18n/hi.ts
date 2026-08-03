@@ -130,6 +130,7 @@ export const hi: Catalog = {
   'error.messageTooLong': 'वह संदेश भेजने के लिए बहुत लंबा है।',
   'error.sealFailed':
     'DIG Chat ने भेजने से मना कर दिया: DIG App ने एक सील किया हुआ संदेश नहीं लौटाया।',
+  'error.notConnected': 'DIG Chat कनेक्ट नहीं है. भेजने के लिए अपने DIG App से पेयर करें.',
   'error.unknown': 'कुछ गड़बड़ हो गई। फिर से प्रयास करें।',
   'error.dismiss': 'खारिज करें',
   'error.boundary.heading': 'DIG Chat में समस्या आ गई',

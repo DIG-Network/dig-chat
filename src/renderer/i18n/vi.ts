@@ -127,6 +127,7 @@ export const vi: Catalog = {
   'error.emptyMessage': 'Hãy nhập nội dung để gửi.',
   'error.messageTooLong': 'Tin nhắn đó quá dài để gửi.',
   'error.sealFailed': 'DIG Chat đã từ chối gửi: DIG App không trả về tin nhắn đã niêm phong.',
+  'error.notConnected': 'DIG Chat chưa được kết nối. Hãy ghép nối với DIG App của bạn để gửi.',
   'error.unknown': 'Đã xảy ra sự cố. Hãy thử lại.',
   'error.dismiss': 'Bỏ qua',
   'error.boundary.heading': 'DIG Chat đã gặp sự cố',

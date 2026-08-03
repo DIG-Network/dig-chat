@@ -128,6 +128,7 @@ export const id: Catalog = {
   'error.emptyMessage': 'Ketik sesuatu untuk dikirim.',
   'error.messageTooLong': 'Pesan itu terlalu panjang untuk dikirim.',
   'error.sealFailed': 'DIG Chat menolak mengirim: DIG App tidak mengembalikan pesan yang tersegel.',
+  'error.notConnected': 'DIG Chat tidak terhubung. Sambungkan dengan DIG App Anda untuk mengirim.',
   'error.unknown': 'Ada yang salah. Coba lagi.',
   'error.dismiss': 'Tutup',
   'error.boundary.heading': 'DIG Chat mengalami masalah',

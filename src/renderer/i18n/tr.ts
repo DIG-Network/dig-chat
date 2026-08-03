@@ -126,6 +126,7 @@ export const tr: Catalog = {
   'error.emptyMessage': 'Göndermek için bir şeyler yazın.',
   'error.messageTooLong': 'Bu mesaj göndermek için çok uzun.',
   'error.sealFailed': 'DIG Chat göndermeyi reddetti: DIG App mühürlü bir mesaj döndürmedi.',
+  'error.notConnected': 'DIG Chat bağlı değil. Göndermek için DIG App’inizle eşleştirin.',
   'error.unknown': 'Bir şeyler ters gitti. Yeniden deneyin.',
   'error.dismiss': 'Kapat',
   'error.boundary.heading': 'DIG Chat bir sorunla karşılaştı',

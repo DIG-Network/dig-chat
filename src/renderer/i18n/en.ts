@@ -139,6 +139,7 @@ export const en = {
   'error.emptyMessage': 'Type something to send.',
   'error.messageTooLong': 'That message is too long to send.',
   'error.sealFailed': 'DIG Chat refused to send: the DIG App did not return a sealed message.',
+  'error.notConnected': 'DIG Chat is not connected. Pair with your DIG App to send.',
   'error.unknown': 'Something went wrong. Try again.',
   'error.dismiss': 'Dismiss',
   'error.boundary.heading': 'DIG Chat hit a problem',
