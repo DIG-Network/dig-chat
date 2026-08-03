@@ -61,7 +61,6 @@ export const es: Catalog = {
   'unpair.explanation':
     'Esto quita el emparejamiento de DIG Chat. Para revocar el acceso de DIG Chat de forma definitiva, usa Aplicaciones emparejadas en la DIG App.',
 
-  'error.retry': 'Reintentar',
   'error.appUnreachable': 'La DIG App no respondió. ¿Está en ejecución?',
   'error.authRequired':
     'La DIG App ya no reconoce este emparejamiento. Puede que se haya revocado; empareja de nuevo con un código nuevo.',

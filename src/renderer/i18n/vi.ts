@@ -60,7 +60,6 @@ export const vi: Catalog = {
   'unpair.explanation':
     'Thao tác này xóa ghép nối khỏi DIG Chat. Để thu hồi vĩnh viễn quyền truy cập của DIG Chat, hãy dùng Ứng dụng đã ghép nối trong DIG App.',
 
-  'error.retry': 'Thử lại',
   'error.appUnreachable': 'DIG App không phản hồi. Nó có đang chạy không?',
   'error.authRequired':
     'DIG App không còn nhận ra ghép nối này. Nó có thể đã bị thu hồi — hãy ghép nối lại bằng một mã mới.',

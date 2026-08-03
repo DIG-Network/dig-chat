@@ -61,7 +61,6 @@ export const ptBR: Catalog = {
   'unpair.explanation':
     'Isso remove o pareamento do DIG Chat. Para revogar o acesso do DIG Chat de vez, use Aplicativos pareados no DIG App.',
 
-  'error.retry': 'Tentar de novo',
   'error.appUnreachable': 'O DIG App não respondeu. Ele está em execução?',
   'error.authRequired':
     'O DIG App não reconhece mais este pareamento. Ele pode ter sido revogado — pareie de novo com um código novo.',

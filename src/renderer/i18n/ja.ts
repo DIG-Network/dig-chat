@@ -60,7 +60,6 @@ export const ja: Catalog = {
   'unpair.explanation':
     'これにより DIG Chat からペアリングが削除されます。DIG Chat のアクセスを完全に取り消すには、DIG App の ペアリング済みのアプリ を使用してください。',
 
-  'error.retry': 'もう一度試す',
   'error.appUnreachable': 'DIG App が応答しませんでした。実行中ですか？',
   'error.authRequired':
     'DIG App はこのペアリングをもう認識しません。取り消された可能性があります。新しいコードでもう一度ペアリングしてください。',

@@ -59,7 +59,6 @@ export const ko: Catalog = {
   'unpair.explanation':
     '이 작업은 DIG Chat에서 페어링을 제거합니다. DIG Chat의 접근을 완전히 취소하려면 DIG App의 페어링된 앱을 사용하세요.',
 
-  'error.retry': '다시 시도',
   'error.appUnreachable': 'DIG App이 응답하지 않았습니다. 실행 중인가요?',
   'error.authRequired':
     'DIG App이 이 페어링을 더 이상 인식하지 못합니다. 취소되었을 수 있습니다 — 새 코드로 다시 페어링하세요.',

@@ -61,7 +61,6 @@ export const id: Catalog = {
   'unpair.explanation':
     'Ini menghapus pemasangan dari DIG Chat. Untuk mencabut akses DIG Chat selamanya, gunakan Aplikasi terpasang di DIG App.',
 
-  'error.retry': 'Coba lagi',
   'error.appUnreachable': 'DIG App tidak menjawab. Apakah ia berjalan?',
   'error.authRequired':
     'DIG App tidak lagi mengenali pemasangan ini. Mungkin telah dicabut — pasangkan lagi dengan kode baru.',

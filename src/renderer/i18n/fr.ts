@@ -62,7 +62,6 @@ export const fr: Catalog = {
   'unpair.explanation':
     'Cela supprime l’appairage de DIG Chat. Pour révoquer définitivement l’accès de DIG Chat, utilisez Applications appairées dans la DIG App.',
 
-  'error.retry': 'Réessayer',
   'error.appUnreachable': 'La DIG App n’a pas répondu. Est-elle en cours d’exécution ?',
   'error.authRequired':
     'La DIG App ne reconnaît plus cet appairage. Il a peut-être été révoqué — appairez de nouveau avec un nouveau code.',

@@ -61,7 +61,6 @@ export const de: Catalog = {
   'unpair.explanation':
     'Dies entfernt die Kopplung aus DIG Chat. Um den Zugriff von DIG Chat endgültig zu widerrufen, verwende Gekoppelte Apps in der DIG App.',
 
-  'error.retry': 'Erneut versuchen',
   'error.appUnreachable': 'Die DIG App hat nicht geantwortet. Läuft sie?',
   'error.authRequired':
     'Die DIG App erkennt diese Kopplung nicht mehr. Sie wurde möglicherweise widerrufen — kopple erneut mit einem neuen Code.',

@@ -61,7 +61,6 @@ export const hi: Catalog = {
   'unpair.explanation':
     'यह DIG Chat से युग्मन हटा देता है। DIG Chat की पहुँच को हमेशा के लिए रद्द करने के लिए, DIG App में युग्मित ऐप्स का उपयोग करें।',
 
-  'error.retry': 'फिर से प्रयास करें',
   'error.appUnreachable': 'DIG App ने उत्तर नहीं दिया। क्या यह चल रहा है?',
   'error.authRequired':
     'DIG App अब इस युग्मन को नहीं पहचानता। हो सकता है इसे रद्द कर दिया गया हो — एक नए कोड के साथ फिर से युग्मित करें।',

@@ -61,7 +61,6 @@ export const ru: Catalog = {
   'unpair.explanation':
     'Это удаляет сопряжение из DIG Chat. Чтобы окончательно отозвать доступ DIG Chat, используйте Связанные приложения в DIG App.',
 
-  'error.retry': 'Повторить',
   'error.appUnreachable': 'DIG App не ответил. Он запущен?',
   'error.authRequired':
     'DIG App больше не распознаёт это сопряжение. Возможно, оно было отозвано — свяжите заново с новым кодом.',

@@ -66,7 +66,6 @@ export const en = {
   'unpair.explanation':
     'This removes the pairing from DIG Chat. To revoke DIG Chat’s access for good, use Paired apps in the DIG App.',
 
-  'error.retry': 'Try again',
   'error.appUnreachable': 'The DIG App did not answer. Is it running?',
   'error.authRequired':
     'The DIG App no longer recognises this pairing. It may have been revoked — pair again with a new code.',

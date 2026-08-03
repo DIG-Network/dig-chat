@@ -54,7 +54,6 @@ export const zhCN: Catalog = {
   'unpair.explanation':
     '这会从 DIG Chat 中移除该配对。若要彻底撤销 DIG Chat 的访问权限，请在 DIG App 中使用 已配对的应用。',
 
-  'error.retry': '重试',
   'error.appUnreachable': 'DIG App 未响应。它在运行吗？',
   'error.authRequired': 'DIG App 不再识别此配对。它可能已被撤销——请用新的验证码重新配对。',
   'error.authBadMac': 'DIG App 拒绝了该请求。请用新的验证码重新配对。',

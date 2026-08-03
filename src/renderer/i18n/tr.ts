@@ -60,7 +60,6 @@ export const tr: Catalog = {
   'unpair.explanation':
     'Bu, eşleştirmeyi DIG Chat’ten kaldırır. DIG Chat’in erişimini tamamen iptal etmek için DIG App’teki Eşleştirilmiş uygulamalar’ı kullanın.',
 
-  'error.retry': 'Yeniden dene',
   'error.appUnreachable': 'DIG App yanıt vermedi. Çalışıyor mu?',
   'error.authRequired':
     'DIG App bu eşleştirmeyi artık tanımıyor. İptal edilmiş olabilir — yeni bir kodla yeniden eşleştirin.',
