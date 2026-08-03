@@ -8,6 +8,7 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 
 import { App } from './components/App';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { IntlBoundary } from './components/IntlBoundary';
 import { createAppStore } from './store';
 import { publishAppVersion } from './version';
@@ -25,7 +26,9 @@ if (container) {
     <StrictMode>
       <Provider store={createAppStore()}>
         <IntlBoundary>
-          <App />
+          <ErrorBoundary>
+            <App />
+          </ErrorBoundary>
         </IntlBoundary>
       </Provider>
     </StrictMode>,

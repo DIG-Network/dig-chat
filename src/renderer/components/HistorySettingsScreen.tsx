@@ -15,9 +15,9 @@ import { RetentionSection } from './RetentionSection';
 export function HistorySettingsScreen(): JSX.Element {
   return (
     <section className="screen" aria-labelledby="settings-heading">
-      <h1 id="settings-heading">
+      <h2 id="settings-heading">
         <FormattedMessage id="settings.heading" />
-      </h1>
+      </h2>
       <ExportSection />
       <ImportSection />
       <RetentionSection />

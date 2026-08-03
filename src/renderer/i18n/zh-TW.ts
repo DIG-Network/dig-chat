@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const zhTW: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': '由你的 DIG 身分簽署的私密訊息。',
   'app.version': '版本 {version}',
 
   'locale.label': '語言',
@@ -32,8 +30,6 @@ export const zhTW: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat 要求了 identity.attest、identity.seal 和 identity.unseal。它從不要求簽署或支出的權限。',
 
-  'state.connected.you': '你是 {did}',
-
   'pairing.problem.empty': '請輸入 DIG App 向你顯示的驗證碼。',
   'pairing.problem.tooShort': '那是 {found, plural, other {# 個字元}}——配對碼有八位。',
   'pairing.problem.tooLong': '那是 {found, plural, other {# 個字元}}——配對碼有八位。',
@@ -45,7 +41,6 @@ export const zhTW: Catalog = {
   'chat.send': '傳送',
   'chat.sending': '正在封裝並傳送…',
   'chat.empty': '還沒有訊息。你傳送的任何內容都會為收件人的 DIG 身分加密。',
-  'chat.unreadable': '{count, plural, other {有 # 則訊息無法開啟}}。',
   'chat.from': '來自 {did}',
   'chat.to': '傳給 {did}',
   'chat.historyEphemeral':
@@ -59,8 +54,6 @@ export const zhTW: Catalog = {
   'unpair.explanation':
     '這會從 DIG Chat 中移除該配對。若要徹底撤銷 DIG Chat 的存取權，請在 DIG App 中使用 已配對的應用程式。',
 
-  'error.heading': '操作未成功',
-  'error.retry': '再試一次',
   'error.appUnreachable': 'DIG App 未回應。它在執行嗎？',
   'error.authRequired': 'DIG App 不再辨識此配對。它可能已被撤銷——請用新的驗證碼重新配對。',
   'error.authBadMac': 'DIG App 拒絕了該要求。請用新的驗證碼重新配對。',
@@ -125,4 +118,7 @@ export const zhTW: Catalog = {
   'error.messageTooLong': '該訊息過長，無法傳送。',
   'error.sealFailed': 'DIG Chat 拒絕傳送：DIG App 未回傳已封裝的訊息。',
   'error.unknown': '出了點問題。請再試一次。',
+  'error.dismiss': '關閉',
+  'error.boundary.heading': 'DIG Chat 遇到問題',
+  'error.boundary.reload': '重新載入 DIG Chat',
 };

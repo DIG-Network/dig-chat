@@ -9,8 +9,6 @@
  * Brand and scheme literals — DIG, DIG Chat, `did:chia:` — stay verbatim in every locale.
  */
 export const en = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Private messages, signed by your DIG identity.',
   'app.version': 'Version {version}',
 
   'locale.label': 'Language',
@@ -42,8 +40,6 @@ export const en = {
   'state.identityUnsupported.detail':
     'DIG Chat asked for identity.attest, identity.seal and identity.unseal. It never asks for permission to sign or spend.',
 
-  'state.connected.you': 'You are {did}',
-
   'pairing.problem.empty': 'Type the code the DIG App showed you.',
   'pairing.problem.tooShort':
     'That is {found, plural, one {# character} other {# characters}} — a pairing code has eight.',
@@ -57,8 +53,6 @@ export const en = {
   'chat.send': 'Send',
   'chat.sending': 'Sealing and sending…',
   'chat.empty': 'No messages yet. Anything you send is encrypted to the recipient’s DIG identity.',
-  'chat.unreadable':
-    '{count, plural, one {# message could not be opened} other {# messages could not be opened}}.',
   'chat.from': 'From {did}',
   'chat.to': 'To {did}',
   'chat.historyEphemeral':
@@ -72,8 +66,6 @@ export const en = {
   'unpair.explanation':
     'This removes the pairing from DIG Chat. To revoke DIG Chat’s access for good, use Paired apps in the DIG App.',
 
-  'error.heading': 'That did not work',
-  'error.retry': 'Try again',
   'error.appUnreachable': 'The DIG App did not answer. Is it running?',
   'error.authRequired':
     'The DIG App no longer recognises this pairing. It may have been revoked — pair again with a new code.',
@@ -148,6 +140,9 @@ export const en = {
   'error.messageTooLong': 'That message is too long to send.',
   'error.sealFailed': 'DIG Chat refused to send: the DIG App did not return a sealed message.',
   'error.unknown': 'Something went wrong. Try again.',
+  'error.dismiss': 'Dismiss',
+  'error.boundary.heading': 'DIG Chat hit a problem',
+  'error.boundary.reload': 'Reload DIG Chat',
 } as const;
 
 /** The message ids the app knows. `en` is the base every other locale is type-checked against. */

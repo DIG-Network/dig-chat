@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { IntlProvider } from 'react-intl';
 import { useSelector } from 'react-redux';
 
@@ -18,6 +19,13 @@ import type { RootState } from '../store';
  */
 export function IntlBoundary({ children }: { children: React.ReactNode }): JSX.Element {
   const locale = useSelector((state: RootState) => state.ui.locale);
+
+  // Keep the document's language in step with the UI locale. `index.html` ships `lang="en"`; without
+  // this a screen reader would announce a translated page in English (failing WCAG 3.1.1 / 3.1.2).
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
   return (
     <IntlProvider locale={locale} defaultLocale={DEFAULT_LOCALE} messages={messagesFor(locale)}>
       {children}

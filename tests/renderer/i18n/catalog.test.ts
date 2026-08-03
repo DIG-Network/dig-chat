@@ -35,8 +35,10 @@ describe.each(Object.entries(CATALOGS))('the %s catalog', (code, catalog) => {
     expect(catalog['app.version'], `${code}.app.version`).toContain('{version}');
   });
 
-  it('keeps the DIG Chat wordmark verbatim in the app name', () => {
-    expect(catalog['app.name']).toBe('DIG Chat');
+  it('keeps the DIG Chat wordmark verbatim across locales', () => {
+    // The brand literal stays untranslated (each catalog's header says so); the boundary heading is a
+    // stable string that carries it in every language.
+    expect(catalog['error.boundary.heading']).toContain('DIG Chat');
   });
 });
 

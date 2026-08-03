@@ -17,8 +17,8 @@ import type { DigChatApi } from '../../../src/preload/index';
  * render. If the boundary ever pinned the locale at mount, the second assertion would fail.
  */
 
-/** The tagline is a plain, non-placeholder string that differs across en/de — an unambiguous probe. */
-const TAGLINE_ID = 'app.tagline';
+/** A plain, non-placeholder string that differs across en/de — an unambiguous probe. */
+const PROBE_ID = 'settings.heading';
 
 /**
  * `changeLocale` is a thunk that asks the main process (over the bridge) what locale actually took
@@ -35,7 +35,7 @@ function renderBoundary(store: AppStore) {
   render(
     <Provider store={store}>
       <IntlBoundary>
-        <FormattedMessage id={TAGLINE_ID} />
+        <FormattedMessage id={PROBE_ID} />
       </IntlBoundary>
     </Provider>,
   );
@@ -47,13 +47,29 @@ describe('IntlBoundary re-localizes the tree when the store locale changes', () 
     const store = createAppStore({ locale: 'en' });
     renderBoundary(store);
 
-    expect(screen.getByText(en[TAGLINE_ID])).toBeInTheDocument();
+    expect(screen.getByText(en[PROBE_ID])).toBeInTheDocument();
 
     await act(async () => {
       await store.dispatch(changeLocale('de'));
     });
 
-    expect(screen.getByText(de[TAGLINE_ID])).toBeInTheDocument();
-    expect(screen.queryByText(en[TAGLINE_ID])).not.toBeInTheDocument();
+    expect(screen.getByText(de[PROBE_ID])).toBeInTheDocument();
+    expect(screen.queryByText(en[PROBE_ID])).not.toBeInTheDocument();
+  });
+
+  it('sets the document language to the active locale (WCAG 3.1.1/3.1.2)', async () => {
+    // index.html hardcodes lang="en"; a screen reader must be told the real language so it does not
+    // announce a translated page with an English voice.
+    installBridge();
+    const store = createAppStore({ locale: 'en' });
+    renderBoundary(store);
+
+    expect(document.documentElement.lang).toBe('en');
+
+    await act(async () => {
+      await store.dispatch(changeLocale('de'));
+    });
+
+    expect(document.documentElement.lang).toBe('de');
   });
 });

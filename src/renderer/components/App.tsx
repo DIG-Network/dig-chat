@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { BugReportButton } from '@dignetwork/components';
 
 import { digChat } from '../bridge';
+import type { AppInfo } from '../../main/ipc';
 import type { ConnectionState } from '../../main/session';
 import {
   chatChanged,
@@ -55,35 +56,22 @@ export function App(): JSX.Element {
   // definite negative is the mistake this app is written not to make.
   const state = status?.state ?? 'checking';
 
+  // Before the first report, `status` is `null` and `errorId` can only come from `loadSession`
+  // rejecting: the first load failed, so instead of an unrecoverable "Checking…" spinner the App
+  // shows a retry panel. Its error is inside that panel, so the app-wide banner stays out of the way.
+  const initialLoadFailed = status === null && errorId !== null;
+
   return (
     <div className="app">
       <header className="app__header">
         <LocaleSelector />
       </header>
 
-      {appInfo && !appInfo.reachesOtherMachines ? (
-        <aside className="notice" role="note" data-testid="transport-notice">
-          <h2>
-            <FormattedMessage id="transport.localOnly.heading" />
-          </h2>
-          <p>
-            <FormattedMessage id="transport.localOnly.body" />
-          </p>
-        </aside>
-      ) : null}
+      <TransportNotice appInfo={appInfo} />
 
-      {errorId ? (
-        <div className="banner banner--error" role="alert" data-testid="error-banner">
-          <FormattedMessage id={errorId} />
-          <button type="button" onClick={() => dispatch(errorDismissed())}>
-            <FormattedMessage id="error.retry" />
-          </button>
-        </div>
-      ) : null}
+      {initialLoadFailed ? null : <ErrorBanner errorId={errorId} />}
 
-      <main>
-        <Panel state={state} />
-      </main>
+      <main>{initialLoadFailed ? <LoadFailed /> : <Panel state={state} />}</main>
 
       {state !== 'unpaired' ? (
         <footer className="app__footer">
@@ -108,6 +96,39 @@ export function App(): JSX.Element {
 }
 
 /**
+ * The standing notice that a sent message never leaves this computer, shown until a real peer-to-peer
+ * transport exists. It renders nothing until the app info has arrived, so an unknown is never drawn as
+ * the reassuring "it can reach other machines" absence of a notice.
+ */
+function TransportNotice({ appInfo }: { appInfo: AppInfo | null }): JSX.Element | null {
+  if (!appInfo || appInfo.reachesOtherMachines) return null;
+  return (
+    <aside className="notice" role="note" data-testid="transport-notice">
+      <p className="notice__title">
+        <FormattedMessage id="transport.localOnly.heading" />
+      </p>
+      <p>
+        <FormattedMessage id="transport.localOnly.body" />
+      </p>
+    </aside>
+  );
+}
+
+/** The app-wide error banner: one dismissible message, never a trap (professional-ui). */
+function ErrorBanner({ errorId }: { errorId: string | null }): JSX.Element | null {
+  const dispatch = useDispatch<AppDispatch>();
+  if (!errorId) return null;
+  return (
+    <div className="banner banner--error" role="alert" data-testid="error-banner">
+      <FormattedMessage id={errorId} />
+      <button type="button" onClick={() => dispatch(errorDismissed())}>
+        <FormattedMessage id="error.dismiss" />
+      </button>
+    </div>
+  );
+}
+
+/**
  * The one panel that matches the session state.
  *
  * A `switch` with no default, over an exhaustive union: adding a sixth state makes this fail to
@@ -127,6 +148,34 @@ function Panel({ state }: { state: ConnectionState }): JSX.Element {
     case 'connected':
       return <ConversationScreen />;
   }
+}
+
+/**
+ * The first load never answered. It reuses the "DIG App is not running" wording because a rejected
+ * `loadSession` means the bridge to the DIG App did not answer — the same fact, reached differently —
+ * and its retry re-runs the load rather than leaving the user watching a spinner that cannot recover.
+ */
+function LoadFailed(): JSX.Element {
+  const dispatch = useDispatch<AppDispatch>();
+  // Dismiss the stale error before retrying, so a successful reload leaves no leftover banner behind;
+  // a second failure sets it again through `loadSession.rejected`.
+  function retry(): void {
+    dispatch(errorDismissed());
+    void dispatch(loadSession());
+  }
+  return (
+    <section className="screen" data-testid="load-failed">
+      <h1>
+        <FormattedMessage id="state.appUnreachable.heading" />
+      </h1>
+      <p>
+        <FormattedMessage id="state.appUnreachable.body" />
+      </p>
+      <button type="button" onClick={retry} data-testid="load-retry">
+        <FormattedMessage id="state.appUnreachable.retry" />
+      </button>
+    </section>
+  );
 }
 
 /** The unknown. Not a zero. */

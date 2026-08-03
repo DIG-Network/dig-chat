@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const ru: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Личные сообщения, подписанные вашей DIG-личностью.',
   'app.version': 'Версия {version}',
 
   'locale.label': 'Язык',
@@ -36,8 +34,6 @@ export const ru: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat запросил identity.attest, identity.seal и identity.unseal. Он никогда не просит разрешения подписывать или тратить.',
 
-  'state.connected.you': 'Вы — {did}',
-
   'pairing.problem.empty': 'Введите код, который показал DIG App.',
   'pairing.problem.tooShort':
     'Это {found, plural, one {# символ} few {# символа} many {# символов} other {# символа}} — в коде сопряжения их восемь.',
@@ -52,8 +48,6 @@ export const ru: Catalog = {
   'chat.sending': 'Запечатывание и отправка…',
   'chat.empty':
     'Пока нет сообщений. Всё, что вы отправляете, шифруется для DIG-личности получателя.',
-  'chat.unreadable':
-    '{count, plural, one {# сообщение не удалось открыть} few {# сообщения не удалось открыть} many {# сообщений не удалось открыть} other {# сообщения не удалось открыть}}.',
   'chat.from': 'От {did}',
   'chat.to': 'Кому {did}',
   'chat.historyEphemeral':
@@ -67,8 +61,6 @@ export const ru: Catalog = {
   'unpair.explanation':
     'Это удаляет сопряжение из DIG Chat. Чтобы окончательно отозвать доступ DIG Chat, используйте Связанные приложения в DIG App.',
 
-  'error.heading': 'Не получилось',
-  'error.retry': 'Повторить',
   'error.appUnreachable': 'DIG App не ответил. Он запущен?',
   'error.authRequired':
     'DIG App больше не распознаёт это сопряжение. Возможно, оно было отозвано — свяжите заново с новым кодом.',
@@ -137,4 +129,7 @@ export const ru: Catalog = {
   'error.messageTooLong': 'Это сообщение слишком длинное для отправки.',
   'error.sealFailed': 'DIG Chat отказался отправлять: DIG App не вернул запечатанное сообщение.',
   'error.unknown': 'Что-то пошло не так. Повторите попытку.',
+  'error.dismiss': 'Закрыть',
+  'error.boundary.heading': 'В DIG Chat произошла ошибка',
+  'error.boundary.reload': 'Перезагрузить DIG Chat',
 };

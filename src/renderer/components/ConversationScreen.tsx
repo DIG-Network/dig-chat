@@ -27,6 +27,9 @@ export function ConversationScreen(): JSX.Element {
   // is not being saved" fact worth a standing notice. An unknown is not rendered as that negative.
   const historyEphemeral = appInfo !== null && !appInfo.historyPersisted;
 
+  // Seed the recipient with this app's OWN DID on purpose: at the loopback stage the only reachable
+  // peer is yourself, so pre-filling your own DID makes send-to-self work out of the box. When a real
+  // peer-to-peer transport lands, drop the seed (default to empty) so a real recipient is chosen.
   const [recipient, setRecipient] = useState(did ?? '');
   const [body, setBody] = useState('');
   const sending = busy === 'sending';

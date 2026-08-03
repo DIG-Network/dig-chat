@@ -19,6 +19,7 @@ export function ExportSection(): JSX.Element {
   const [confirm, setConfirm] = useState('');
   const [mismatch, setMismatch] = useState(false);
   const [savedPath, setSavedPath] = useState<string | null>(null);
+  const [errorId, setErrorId] = useState<string | null>(null);
 
   const exporting = busy === 'exporting';
   const canSubmit = passphrase.length > 0 && !exporting;
@@ -26,6 +27,7 @@ export function ExportSection(): JSX.Element {
   async function submit(event: FormEvent): Promise<void> {
     event.preventDefault();
     setSavedPath(null);
+    setErrorId(null);
     if (passphrase !== confirm) {
       setMismatch(true);
       return;
@@ -36,14 +38,18 @@ export function ExportSection(): JSX.Element {
       setSavedPath(action.payload.path ?? '');
       setPassphrase('');
       setConfirm('');
+    } else if (exportHistory.rejected.match(action)) {
+      // Surfaced inline, right here, to match ImportSection — a failed seal is not raised on the
+      // app-wide banner (store: exportHistory.rejected no longer sets errorId).
+      setErrorId((action.payload as string | undefined) ?? 'error.unknown');
     }
   }
 
   return (
     <section className="settings-section" aria-labelledby="export-heading">
-      <h2 id="export-heading">
+      <h3 id="export-heading">
         <FormattedMessage id="settings.export.heading" />
-      </h2>
+      </h3>
       <p>
         <FormattedMessage id="settings.export.body" />
       </p>
@@ -89,6 +95,11 @@ export function ExportSection(): JSX.Element {
       {savedPath !== null && (
         <p className="notice" role="status" data-testid="export-success">
           <FormattedMessage id="settings.export.success" values={{ path: savedPath }} />
+        </p>
+      )}
+      {errorId && (
+        <p className="problem" role="alert" data-testid="export-error">
+          <FormattedMessage id={errorId} />
         </p>
       )}
     </section>

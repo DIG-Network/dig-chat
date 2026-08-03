@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
@@ -154,6 +154,108 @@ describe('the connection state is reported honestly', () => {
     await renderApp({ status: { state: 'app-unreachable', did: null, pairedAt: 1 } });
     expect(screen.getByTestId('retry')).toBeEnabled();
     expect(screen.getByTestId('forget')).toBeEnabled();
+  });
+});
+
+describe('a failed first load can be recovered', () => {
+  it('shows a retry panel instead of leaving the spinner stuck', async () => {
+    // loadSession rejects (the bridge to the DIG App did not answer). The old code left "Checking…"
+    // spinning with no way out; now a retry panel stands in its place.
+    installBridge({
+      getStatus: vi.fn(async () => {
+        throw new Error('bridge down');
+      }),
+    });
+    await renderApp();
+
+    expect(await screen.findByTestId('load-failed')).toBeInTheDocument();
+    expect(screen.queryByTestId('checking')).not.toBeInTheDocument();
+    expect(screen.getByTestId('load-retry')).toBeEnabled();
+    // The failure lives in the panel, not also on the app-wide banner.
+    expect(screen.queryByTestId('error-banner')).not.toBeInTheDocument();
+  });
+
+  it('re-runs the load when the retry is pressed', async () => {
+    const getStatus = vi
+      .fn<() => Promise<SessionStatus>>()
+      .mockRejectedValueOnce(new Error('bridge down'))
+      .mockResolvedValue(unpaired);
+    installBridge({ getStatus });
+    await renderApp();
+
+    await screen.findByTestId('load-failed');
+    await userEvent.click(screen.getByTestId('load-retry'));
+
+    // The second load succeeds, so the pairing screen replaces the retry panel.
+    expect(await screen.findByTestId('pairing-code')).toBeInTheDocument();
+  });
+});
+
+describe('the error banner offers a plain dismiss, not a mislabelled retry', () => {
+  it('labels the banner button "Dismiss" and clears the error when pressed', async () => {
+    await renderApp({ status: unpaired, errorId: 'error.pairDenied' });
+    const banner = screen.getByTestId('error-banner');
+    const dismiss = within(banner).getByRole('button', { name: /dismiss/i });
+
+    await userEvent.click(dismiss);
+    expect(screen.queryByTestId('error-banner')).not.toBeInTheDocument();
+  });
+});
+
+describe('an import failure appears exactly once', () => {
+  it('shows the inline import error and no duplicate app-wide banner', async () => {
+    // The isolated HistorySettings suite mounts the section alone and so could never see the double.
+    // Mounted inside App, a rejected import must surface in ONE place — inline, next to the control.
+    installBridge({
+      getStatus: vi.fn(async () => connected),
+      getAppInfo: vi.fn(async () => ({
+        version: '0.1.0',
+        reachesOtherMachines: false,
+        transport: 'loopback' as const,
+        historyPersisted: true,
+      })),
+      importHistory: vi.fn(async () => {
+        throw new Error('error.archiveDecrypt: wrong');
+      }),
+    });
+    // No preloaded status here: renderApp only re-installs the bridge when one is given, and doing so
+    // would drop the importHistory override above. The bridge's getStatus drives the connected state.
+    await renderApp();
+
+    await userEvent.type(screen.getByTestId('import-passphrase'), 'wrong');
+    await userEvent.click(screen.getByTestId('import-submit'));
+
+    expect(await screen.findByTestId('import-error')).toHaveTextContent('did not open the file');
+    expect(screen.queryByTestId('error-banner')).not.toBeInTheDocument();
+    expect(screen.getAllByText(/did not open the file/i)).toHaveLength(1);
+  });
+});
+
+describe('heading structure is a single, correctly-ordered outline', () => {
+  it('has exactly one h1 per screen, with the transport notice demoted below it', async () => {
+    await renderApp({
+      status: connected,
+      appInfo: {
+        version: '0.1.0',
+        reachesOtherMachines: false,
+        transport: 'loopback',
+        historyPersisted: true,
+      },
+    });
+
+    // One h1 for the whole connected screen — the conversation heading, not the transport notice.
+    const level1 = screen.getAllByRole('heading', { level: 1 });
+    expect(level1).toHaveLength(1);
+    expect(level1[0]).toHaveTextContent(/Conversation/i);
+
+    // The transport notice is emphasis, not a heading, so it no longer breaks the outline.
+    expect(screen.queryByRole('heading', { name: /stay on this computer/i })).toBeNull();
+
+    // Settings sits a level under the conversation, its sub-sections a level under that.
+    expect(screen.getByRole('heading', { level: 2, name: /^History$/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 3, name: /Export your history/i }),
+    ).toBeInTheDocument();
   });
 });
 

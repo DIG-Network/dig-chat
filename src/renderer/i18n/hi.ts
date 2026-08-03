@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const hi: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'निजी संदेश, आपकी DIG पहचान से हस्ताक्षरित।',
   'app.version': 'संस्करण {version}',
 
   'locale.label': 'भाषा',
@@ -36,8 +34,6 @@ export const hi: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat ने identity.attest, identity.seal और identity.unseal माँगा। यह हस्ताक्षर करने या खर्च करने की अनुमति कभी नहीं माँगता।',
 
-  'state.connected.you': 'आप {did} हैं',
-
   'pairing.problem.empty': 'वह कोड टाइप करें जो DIG App ने आपको दिखाया।',
   'pairing.problem.tooShort':
     'यह {found, plural, one {# अक्षर} other {# अक्षर}} है — एक युग्मन कोड में आठ होते हैं।',
@@ -52,8 +48,6 @@ export const hi: Catalog = {
   'chat.sending': 'सील करके भेजा जा रहा है…',
   'chat.empty':
     'अभी कोई संदेश नहीं है। आप जो कुछ भी भेजते हैं, वह प्राप्तकर्ता की DIG पहचान के लिए एन्क्रिप्ट किया जाता है।',
-  'chat.unreadable':
-    '{count, plural, one {# संदेश नहीं खोला जा सका} other {# संदेश नहीं खोले जा सके}}।',
   'chat.from': '{did} से',
   'chat.to': '{did} को',
   'chat.historyEphemeral':
@@ -67,8 +61,6 @@ export const hi: Catalog = {
   'unpair.explanation':
     'यह DIG Chat से युग्मन हटा देता है। DIG Chat की पहुँच को हमेशा के लिए रद्द करने के लिए, DIG App में युग्मित ऐप्स का उपयोग करें।',
 
-  'error.heading': 'यह काम नहीं आया',
-  'error.retry': 'फिर से प्रयास करें',
   'error.appUnreachable': 'DIG App ने उत्तर नहीं दिया। क्या यह चल रहा है?',
   'error.authRequired':
     'DIG App अब इस युग्मन को नहीं पहचानता। हो सकता है इसे रद्द कर दिया गया हो — एक नए कोड के साथ फिर से युग्मित करें।',
@@ -139,4 +131,7 @@ export const hi: Catalog = {
   'error.sealFailed':
     'DIG Chat ने भेजने से मना कर दिया: DIG App ने एक सील किया हुआ संदेश नहीं लौटाया।',
   'error.unknown': 'कुछ गड़बड़ हो गई। फिर से प्रयास करें।',
+  'error.dismiss': 'खारिज करें',
+  'error.boundary.heading': 'DIG Chat में समस्या आ गई',
+  'error.boundary.reload': 'DIG Chat फिर से लोड करें',
 };

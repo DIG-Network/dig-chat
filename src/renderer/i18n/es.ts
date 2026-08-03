@@ -2,8 +2,6 @@
 import type { Catalog } from './en';
 
 export const es: Catalog = {
-  'app.name': 'DIG Chat',
-  'app.tagline': 'Mensajes privados, firmados con tu identidad DIG.',
   'app.version': 'Versión {version}',
 
   'locale.label': 'Idioma',
@@ -36,8 +34,6 @@ export const es: Catalog = {
   'state.identityUnsupported.detail':
     'DIG Chat solicitó identity.attest, identity.seal e identity.unseal. Nunca pide permiso para firmar ni gastar.',
 
-  'state.connected.you': 'Eres {did}',
-
   'pairing.problem.empty': 'Escribe el código que te mostró la DIG App.',
   'pairing.problem.tooShort':
     'Eso son {found, plural, one {# carácter} other {# caracteres}} — un código de emparejamiento tiene ocho.',
@@ -52,8 +48,6 @@ export const es: Catalog = {
   'chat.sending': 'Sellando y enviando…',
   'chat.empty':
     'Aún no hay mensajes. Todo lo que envíes se cifra para la identidad DIG del destinatario.',
-  'chat.unreadable':
-    '{count, plural, one {# mensaje no se pudo abrir} other {# mensajes no se pudieron abrir}}.',
   'chat.from': 'De {did}',
   'chat.to': 'Para {did}',
   'chat.historyEphemeral':
@@ -67,8 +61,6 @@ export const es: Catalog = {
   'unpair.explanation':
     'Esto quita el emparejamiento de DIG Chat. Para revocar el acceso de DIG Chat de forma definitiva, usa Aplicaciones emparejadas en la DIG App.',
 
-  'error.heading': 'Eso no funcionó',
-  'error.retry': 'Reintentar',
   'error.appUnreachable': 'La DIG App no respondió. ¿Está en ejecución?',
   'error.authRequired':
     'La DIG App ya no reconoce este emparejamiento. Puede que se haya revocado; empareja de nuevo con un código nuevo.',
@@ -139,4 +131,7 @@ export const es: Catalog = {
   'error.messageTooLong': 'Ese mensaje es demasiado largo para enviarlo.',
   'error.sealFailed': 'DIG Chat se negó a enviar: la DIG App no devolvió un mensaje sellado.',
   'error.unknown': 'Algo salió mal. Inténtalo de nuevo.',
+  'error.dismiss': 'Descartar',
+  'error.boundary.heading': 'DIG Chat tuvo un problema',
+  'error.boundary.reload': 'Recargar DIG Chat',
 };
