@@ -28,3 +28,5 @@ export function isStoredMessage(value: unknown): value is ChatMessage {
     Number.isFinite(at)
   );
 }
+
+// TODO(#2030): main-process hardening — sanitise dedup, typed error, envelope bounds, atomic credential write.
