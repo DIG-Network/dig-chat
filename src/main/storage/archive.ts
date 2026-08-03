@@ -30,8 +30,7 @@ import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { argon2id } from '@noble/hashes/argon2';
 
 import type { ChatMessage } from '../chat/conversation';
-import { sanitizeIdentifier, sanitizePeerText } from '../chat/peer-text';
-import { isStoredMessage } from '../chat/stored-message';
+import { isStoredMessage, sanitizeStoredMessage } from '../chat/stored-message';
 
 /** The magic string every archive begins with, so a foreign file is refused before any key work. */
 export const ARCHIVE_MAGIC = 'DIGCHAT-ARCHIVE';
@@ -232,13 +231,7 @@ function parsePayload(plaintext: string): ChatMessage[] {
 
 /** Re-neutralise every imported entry (§5.5): the archive is an untrusted file, its text is peer text. */
 function sanitiseMessages(messages: readonly unknown[]): ChatMessage[] {
-  return messages.filter(isStoredMessage).map((message) => ({
-    id: message.id,
-    direction: message.direction,
-    peerDid: sanitizeIdentifier(message.peerDid),
-    body: sanitizePeerText(message.body),
-    at: message.at,
-  }));
+  return messages.filter(isStoredMessage).map(sanitizeStoredMessage);
 }
 
 /** Whether a decoded value has the exact container shape, so a malformed file is a format error. */

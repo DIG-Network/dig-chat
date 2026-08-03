@@ -117,6 +117,7 @@ export const zhCN: Catalog = {
   'error.emptyMessage': '请输入要发送的内容。',
   'error.messageTooLong': '该消息过长，无法发送。',
   'error.sealFailed': 'DIG Chat 拒绝发送：DIG App 未返回已封装的消息。',
+  'error.notConnected': 'DIG Chat 未连接。请先与你的 DIG App 配对后再发送。',
   'error.unknown': '出了点问题。请重试。',
   'error.dismiss': '关闭',
   'error.boundary.heading': 'DIG Chat 遇到问题',

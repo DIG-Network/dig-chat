@@ -126,6 +126,7 @@ export const ko: Catalog = {
   'error.messageTooLong': '그 메시지는 너무 길어서 보낼 수 없습니다.',
   'error.sealFailed':
     'DIG Chat이 전송을 거부했습니다: DIG App이 봉인된 메시지를 반환하지 않았습니다.',
+  'error.notConnected': 'DIG Chat가 연결되어 있지 않습니다. 보내려면 먼저 DIG App과 페어링하세요.',
   'error.unknown': '문제가 발생했습니다. 다시 시도하세요.',
   'error.dismiss': '닫기',
   'error.boundary.heading': 'DIG Chat에 문제가 발생했습니다',

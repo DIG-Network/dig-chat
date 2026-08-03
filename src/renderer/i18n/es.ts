@@ -130,6 +130,7 @@ export const es: Catalog = {
   'error.emptyMessage': 'Escribe algo para enviar.',
   'error.messageTooLong': 'Ese mensaje es demasiado largo para enviarlo.',
   'error.sealFailed': 'DIG Chat se negó a enviar: la DIG App no devolvió un mensaje sellado.',
+  'error.notConnected': 'DIG Chat no está conectado. Vincula tu DIG App para enviar.',
   'error.unknown': 'Algo salió mal. Inténtalo de nuevo.',
   'error.dismiss': 'Descartar',
   'error.boundary.heading': 'DIG Chat tuvo un problema',

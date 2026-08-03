@@ -4,6 +4,8 @@ import { x25519 } from '@noble/curves/ed25519';
 import {
   EnvelopeError,
   MAGIC,
+  MAX_CIPHERTEXT_BYTES,
+  MAX_DID_BYTES,
   MAX_PLAINTEXT_BYTES,
   associatedData,
   decodeEnvelope,
@@ -184,6 +186,46 @@ describe('decodeEnvelope on untrusted bytes', () => {
   });
 });
 
+describe('decodeEnvelope enforces the write-path bounds on the READ path (#2030)', () => {
+  it('refuses a sender DID longer than MAX_DID_BYTES', () => {
+    const wire = craftWire({ senderDidLen: MAX_DID_BYTES + 1, ciphertextLen: 16 });
+    expect(() => decodeEnvelope(wire)).toThrow(EnvelopeError);
+  });
+
+  it('refuses an empty sender DID — the write path never emits one', () => {
+    const wire = craftWire({ senderDidLen: 0, ciphertextLen: 16 });
+    expect(() => decodeEnvelope(wire)).toThrow(EnvelopeError);
+  });
+
+  it('refuses a recipient DID longer than MAX_DID_BYTES', () => {
+    const wire = craftWire({
+      senderDidLen: 5,
+      recipientDidLen: MAX_DID_BYTES + 1,
+      ciphertextLen: 16,
+    });
+    expect(() => decodeEnvelope(wire)).toThrow(EnvelopeError);
+  });
+
+  it('refuses a ciphertext larger than MAX_CIPHERTEXT_BYTES', () => {
+    const wire = craftWire({ senderDidLen: 5, ciphertextLen: MAX_CIPHERTEXT_BYTES + 1 });
+    expect(() => decodeEnvelope(wire)).toThrow(EnvelopeError);
+  });
+
+  it('accepts a ciphertext exactly at the ceiling — a max-length message seals to this', () => {
+    // The ceiling is MAX_PLAINTEXT_BYTES + the AEAD tag, so the largest LEGITIMATE message must
+    // decode: a bound that rejected it would reject valid traffic, not just hostile lengths.
+    const plaintext = new Uint8Array(MAX_PLAINTEXT_BYTES).fill(0x41);
+    const wire = seal(plaintext);
+    expect(decodeEnvelope(wire).ciphertext.length).toBe(MAX_CIPHERTEXT_BYTES);
+  });
+
+  it('still round-trips a valid DID at the maximum length', () => {
+    const did = `did:chia:${'a'.repeat(MAX_DID_BYTES - 'did:chia:'.length)}`;
+    const wire = seal(new TextEncoder().encode('hello'), { senderDid: did });
+    expect(decodeEnvelope(wire).senderDid).toBe(did);
+  });
+});
+
 describe('encodeEnvelope', () => {
   it('refuses an empty or oversized DID', () => {
     const decoded = decodeEnvelope(seal(new TextEncoder().encode('hello')));
@@ -217,6 +259,44 @@ describe('associatedData', () => {
     );
   });
 });
+
+/**
+ * Assemble raw envelope bytes from arbitrary field lengths — including ones `encodeEnvelope` refuses
+ * to write — so the READ path can be tested against inputs only a hostile or buggy peer would send.
+ * DID bytes are `'a'` (valid UTF-8) so a failure is the LENGTH bound, not the UTF-8 check.
+ */
+function craftWire(opts: {
+  senderDidLen: number;
+  recipientDidLen?: number;
+  ciphertextLen: number;
+}): Uint8Array {
+  const sender = new Uint8Array(opts.senderDidLen).fill(0x61);
+  const recipient = new Uint8Array(opts.recipientDidLen ?? 5).fill(0x61);
+  const ciphertext = new Uint8Array(opts.ciphertextLen).fill(0x42);
+  const total =
+    MAGIC.length + 2 + 2 + sender.length + 2 + recipient.length + 32 + 24 + 4 + ciphertext.length;
+  const bytes = new Uint8Array(total);
+  const view = new DataView(bytes.buffer);
+  let at = 0;
+  bytes.set(MAGIC, at);
+  at += MAGIC.length;
+  bytes[at++] = 1; // version
+  bytes[at++] = 1; // suite
+  view.setUint16(at, sender.length, false);
+  at += 2;
+  bytes.set(sender, at);
+  at += sender.length;
+  view.setUint16(at, recipient.length, false);
+  at += 2;
+  bytes.set(recipient, at);
+  at += recipient.length;
+  at += 32; // epk (zeros)
+  at += 24; // nonce (zeros)
+  view.setUint32(at, ciphertext.length, false);
+  at += 4;
+  bytes.set(ciphertext, at);
+  return bytes;
+}
 
 /** Where `needle` first occurs in `haystack`, or -1. */
 function indexOfBytes(haystack: Uint8Array, needle: Uint8Array): number {

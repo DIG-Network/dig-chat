@@ -128,6 +128,8 @@ export const ru: Catalog = {
   'error.emptyMessage': 'Введите что-нибудь для отправки.',
   'error.messageTooLong': 'Это сообщение слишком длинное для отправки.',
   'error.sealFailed': 'DIG Chat отказался отправлять: DIG App не вернул запечатанное сообщение.',
+  'error.notConnected':
+    'DIG Chat не подключён. Чтобы отправлять, сначала выполните сопряжение с DIG App.',
   'error.unknown': 'Что-то пошло не так. Повторите попытку.',
   'error.dismiss': 'Закрыть',
   'error.boundary.heading': 'В DIG Chat произошла ошибка',

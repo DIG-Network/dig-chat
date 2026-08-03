@@ -21,6 +21,7 @@ import type { IdentityAgent, IdentitySummary } from '../identity/agent';
 import { EnvelopeError, MAX_PLAINTEXT_BYTES, decodeEnvelope } from '../identity/envelope';
 import type { MessageTransport } from '../transport/types';
 import { decodePeerText, sanitizeIdentifier, sanitizePeerText } from './peer-text';
+import { sanitizeStoredMessage } from './stored-message';
 
 /** Which way a message went. */
 export type Direction = 'sent' | 'received';
@@ -123,11 +124,7 @@ export class Conversation {
     // Restored history is re-sanitised and re-bounded here, not trusted as written: the store is a
     // file another process could edit, so its contents are peer text again on the way back in.
     for (const restored of boundHistory(deps.initialHistory ?? [])) {
-      this.messages.push({
-        ...restored,
-        peerDid: sanitizeIdentifier(restored.peerDid),
-        body: sanitizePeerText(restored.body),
-      });
+      this.messages.push(sanitizeStoredMessage(restored));
     }
     this.sequence = this.messages.length;
 

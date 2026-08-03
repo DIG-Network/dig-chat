@@ -129,6 +129,7 @@ export const ptBR: Catalog = {
   'error.emptyMessage': 'Digite algo para enviar.',
   'error.messageTooLong': 'Essa mensagem é longa demais para enviar.',
   'error.sealFailed': 'O DIG Chat se recusou a enviar: o DIG App não retornou uma mensagem selada.',
+  'error.notConnected': 'O DIG Chat não está conectado. Emparelhe com o seu DIG App para enviar.',
   'error.unknown': 'Algo deu errado. Tente de novo.',
   'error.dismiss': 'Dispensar',
   'error.boundary.heading': 'O DIG Chat encontrou um problema',

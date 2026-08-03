@@ -133,6 +133,7 @@ export const de: Catalog = {
   'error.messageTooLong': 'Diese Nachricht ist zu lang zum Senden.',
   'error.sealFailed':
     'DIG Chat hat das Senden verweigert: Die DIG App hat keine versiegelte Nachricht zurückgegeben.',
+  'error.notConnected': 'DIG Chat ist nicht verbunden. Koppeln Sie Ihre DIG App, um zu senden.',
   'error.unknown': 'Etwas ist schiefgelaufen. Versuche es erneut.',
   'error.dismiss': 'Schließen',
   'error.boundary.heading': 'DIG Chat ist auf ein Problem gestoßen',

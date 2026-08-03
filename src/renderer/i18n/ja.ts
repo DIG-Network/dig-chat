@@ -132,6 +132,8 @@ export const ja: Catalog = {
   'error.messageTooLong': 'そのメッセージは長すぎて送信できません。',
   'error.sealFailed':
     'DIG Chat は送信を拒否しました。DIG App が封印されたメッセージを返しませんでした。',
+  'error.notConnected':
+    'DIG Chat が接続されていません。送信するにはまず DIG App とペアリングしてください。',
   'error.unknown': '問題が発生しました。もう一度お試しください。',
   'error.dismiss': '閉じる',
   'error.boundary.heading': 'DIG Chat で問題が発生しました',

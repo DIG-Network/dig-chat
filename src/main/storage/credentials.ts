@@ -20,7 +20,7 @@
  */
 
 import { constants } from 'node:fs';
-import { mkdir, chmod, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, chmod, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import type { PairingCredential } from '../pairing/client';
@@ -85,10 +85,16 @@ export class CredentialStore {
       pairedAt: credential.pairedAt,
     };
     await mkdir(dirname(this.path), { recursive: true, mode: 0o700 });
-    await writeFile(this.path, this.sealer.encryptString(JSON.stringify(stored)), {
+    // Write to a sibling temp file then rename: rename is atomic on the same filesystem, so a reader
+    // sees either the whole old credential or the whole new one, never a torn write — the same
+    // discipline {@link HistoryStore.save} uses.
+    const temp = `${this.path}.tmp`;
+    await writeFile(temp, this.sealer.encryptString(JSON.stringify(stored)), {
       mode: 0o600,
       flag: 'w',
     });
+    await chmod(temp, 0o600).catch(() => undefined);
+    await rename(temp, this.path);
     // Re-applied explicitly: `mode` on `writeFile` is masked by the process umask and is ignored
     // outright when the file already exists, so the first save could be 0600 and a later one 0644.
     await chmod(this.path, 0o600).catch(() => undefined);
