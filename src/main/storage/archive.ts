@@ -51,6 +51,7 @@ export const ARCHIVE_VERSION = 1;
 export const ARCHIVE_MAX_BYTES = 4 * 1_024 * 1_024;
 
 /** Argon2id work factors (SPEC §5.7). Interactive-desktop tuned: 64 MiB, three passes, single lane. */
+// #2029: the cost (m/t/p) is injectable so tests can derive with a cheap factor; production omits the arg.
 const KDF = { algo: 'argon2id', m: 65_536, t: 3, p: 1 } as const;
 
 const SALT_BYTES = 16;
