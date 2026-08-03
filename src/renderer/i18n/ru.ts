@@ -132,6 +132,7 @@ export const ru: Catalog = {
   'error.archiveVersion':
     'Этот файл истории создан более новой версией DIG Chat. Обновите и попробуйте снова.',
   'error.archiveDecrypt': 'Эта парольная фраза не открыла файл, или файл повреждён.',
+  'error.archiveTooLarge': 'Этот файл слишком большой, чтобы быть файлом истории DIG Chat.',
   'error.emptyMessage': 'Введите что-нибудь для отправки.',
   'error.messageTooLong': 'Это сообщение слишком длинное для отправки.',
   'error.sealFailed': 'DIG Chat отказался отправлять: DIG App не вернул запечатанное сообщение.',

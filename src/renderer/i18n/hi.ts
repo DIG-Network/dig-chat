@@ -133,6 +133,7 @@ export const hi: Catalog = {
   'error.archiveVersion':
     'वह इतिहास फ़ाइल DIG Chat के नए संस्करण से बनाई गई थी। अपडेट करें और फिर से प्रयास करें।',
   'error.archiveDecrypt': 'उस पासफ़्रेज़ ने फ़ाइल नहीं खोली, या फ़ाइल क्षतिग्रस्त है।',
+  'error.archiveTooLarge': 'वह फ़ाइल DIG Chat इतिहास फ़ाइल होने के लिए बहुत बड़ी है।',
   'error.emptyMessage': 'भेजने के लिए कुछ टाइप करें।',
   'error.messageTooLong': 'वह संदेश भेजने के लिए बहुत लंबा है।',
   'error.sealFailed':

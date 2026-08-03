@@ -131,6 +131,7 @@ export const id: Catalog = {
   'error.archiveVersion':
     'Berkas riwayat itu dibuat oleh versi DIG Chat yang lebih baru. Perbarui dan coba lagi.',
   'error.archiveDecrypt': 'Frasa sandi itu tidak membuka berkas, atau berkas rusak.',
+  'error.archiveTooLarge': 'Berkas itu terlalu besar untuk menjadi berkas riwayat DIG Chat.',
   'error.emptyMessage': 'Ketik sesuatu untuk dikirim.',
   'error.messageTooLong': 'Pesan itu terlalu panjang untuk dikirim.',
   'error.sealFailed': 'DIG Chat menolak mengirim: DIG App tidak mengembalikan pesan yang tersegel.',

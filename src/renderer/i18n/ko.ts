@@ -128,6 +128,7 @@ export const ko: Catalog = {
   'error.archiveVersion':
     '그 기록 파일은 최신 버전의 DIG Chat으로 만들어졌습니다. 업데이트한 후 다시 시도하세요.',
   'error.archiveDecrypt': '그 암호문구로 파일을 열지 못했거나 파일이 손상되었습니다.',
+  'error.archiveTooLarge': '그 파일은 DIG Chat 기록 파일이라기에는 너무 큽니다.',
   'error.emptyMessage': '보낼 내용을 입력하세요.',
   'error.messageTooLong': '그 메시지는 너무 길어서 보낼 수 없습니다.',
   'error.sealFailed':

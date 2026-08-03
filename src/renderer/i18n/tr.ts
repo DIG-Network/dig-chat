@@ -129,6 +129,7 @@ export const tr: Catalog = {
   'error.archiveVersion':
     "Bu geçmiş dosyası DIG Chat'in daha yeni bir sürümüyle oluşturuldu. Güncelleyip tekrar deneyin.",
   'error.archiveDecrypt': 'Bu parola cümlesi dosyayı açmadı ya da dosya bozuk.',
+  'error.archiveTooLarge': 'Bu dosya bir DIG Chat geçmiş dosyası olamayacak kadar büyük.',
   'error.emptyMessage': 'Göndermek için bir şeyler yazın.',
   'error.messageTooLong': 'Bu mesaj göndermek için çok uzun.',
   'error.sealFailed': 'DIG Chat göndermeyi reddetti: DIG App mühürlü bir mesaj döndürmedi.',

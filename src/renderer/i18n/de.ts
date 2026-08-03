@@ -136,6 +136,7 @@ export const de: Catalog = {
     'Diese Verlaufsdatei wurde mit einer neueren Version von DIG Chat erstellt. Aktualisiere und versuche es erneut.',
   'error.archiveDecrypt':
     'Diese Passphrase hat die Datei nicht geöffnet, oder die Datei ist beschädigt.',
+  'error.archiveTooLarge': 'Diese Datei ist zu groß, um eine DIG-Chat-Verlaufsdatei zu sein.',
   'error.emptyMessage': 'Gib etwas zum Senden ein.',
   'error.messageTooLong': 'Diese Nachricht ist zu lang zum Senden.',
   'error.sealFailed':

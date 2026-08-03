@@ -120,6 +120,7 @@ export const zhTW: Catalog = {
   'error.archiveFormat': '該檔案不是 DIG Chat 歷史記錄檔案。',
   'error.archiveVersion': '該歷史記錄檔案是由較新版本的 DIG Chat 建立的。請更新後重試。',
   'error.archiveDecrypt': '該通關密語未能開啟檔案，或檔案已損毀。',
+  'error.archiveTooLarge': '該檔案太大，不可能是 DIG Chat 歷史檔案。',
   'error.emptyMessage': '請輸入要傳送的內容。',
   'error.messageTooLong': '該訊息過長，無法傳送。',
   'error.sealFailed': 'DIG Chat 拒絕傳送：DIG App 未回傳已封裝的訊息。',
