@@ -30,8 +30,8 @@ import { dirname, join } from 'node:path';
 
 import type { ChatMessage } from '../chat/conversation';
 import { boundHistory } from '../chat/conversation';
-import { sanitizeIdentifier, sanitizePeerText } from '../chat/peer-text';
-import { isStoredMessage } from '../chat/stored-message';
+import { sanitizeIdentifier } from '../chat/peer-text';
+import { isStoredMessage, sanitizeStoredMessage } from '../chat/stored-message';
 import type { SecretSealer } from './credentials';
 
 /** The file name inside the app's userData directory. */
@@ -108,13 +108,7 @@ export class HistoryStore {
     try {
       const stored = JSON.parse(this.sealer.decryptString(sealed)) as Partial<StoredHistory>;
       if (stored.v !== 1 || !Array.isArray(stored.messages)) return [];
-      const clean = stored.messages.filter(isStoredMessage).map((message) => ({
-        id: message.id,
-        direction: message.direction,
-        peerDid: sanitizeIdentifier(message.peerDid),
-        body: sanitizePeerText(message.body),
-        at: message.at,
-      }));
+      const clean = stored.messages.filter(isStoredMessage).map(sanitizeStoredMessage);
       return boundHistory(clean);
     } catch {
       return [];

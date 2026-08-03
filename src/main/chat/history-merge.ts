@@ -18,8 +18,7 @@
 
 import type { ChatMessage } from './conversation';
 import { boundHistory } from './conversation';
-import { sanitizeIdentifier, sanitizePeerText } from './peer-text';
-import { isStoredMessage } from './stored-message';
+import { isStoredMessage, sanitizeStoredMessage } from './stored-message';
 
 /**
  * Merge `imported` into `existing`, existing copies winning on an id conflict.
@@ -35,9 +34,10 @@ export function mergeHistories(
   const byId = new Map<string, ChatMessage>();
   // Existing first so it wins the id conflict: a later `set` for an id already present is skipped.
   for (const message of existing)
-    if (isStoredMessage(message)) byId.set(message.id, clean(message));
+    if (isStoredMessage(message)) byId.set(message.id, sanitizeStoredMessage(message));
   for (const message of imported) {
-    if (isStoredMessage(message) && !byId.has(message.id)) byId.set(message.id, clean(message));
+    if (isStoredMessage(message) && !byId.has(message.id))
+      byId.set(message.id, sanitizeStoredMessage(message));
   }
 
   const merged = [...byId.values()].sort(byTimeThenId);
@@ -61,15 +61,6 @@ export function countNewMessages(
   for (const message of imported)
     if (isStoredMessage(message) && !have.has(message.id)) fresh.add(message.id);
   return fresh.size;
-}
-
-/** Re-neutralise a message's peer text: the imported half came from an untrusted file. */
-function clean(message: ChatMessage): ChatMessage {
-  return {
-    ...message,
-    peerDid: sanitizeIdentifier(message.peerDid),
-    body: sanitizePeerText(message.body),
-  };
 }
 
 /** Order by timestamp ascending, breaking ties by id so the sort is total and reproducible. */

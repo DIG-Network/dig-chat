@@ -68,6 +68,19 @@ export const MAX_PLAINTEXT_BYTES = 48 * 1024;
 /** The largest a DID may be, in UTF-8 bytes — the header length field is a u16, and this is well under it. */
 export const MAX_DID_BYTES = 512;
 
+/** The XChaCha20-Poly1305 authentication tag length, in bytes. */
+export const AEAD_TAG_LEN = 16;
+
+/**
+ * The largest ciphertext one envelope carries, in bytes: the plaintext ceiling plus the AEAD tag.
+ *
+ * Enforced on the READ path so a hostile `ct_len` is refused here — before an allocation sized by an
+ * attacker — rather than deferred to the transport's 64 KiB frame cap. The largest LEGITIMATE message
+ * (a {@link MAX_PLAINTEXT_BYTES} plaintext) seals to exactly this, so a valid max-length message still
+ * decodes.
+ */
+export const MAX_CIPHERTEXT_BYTES = MAX_PLAINTEXT_BYTES + AEAD_TAG_LEN;
+
 /** A decoded envelope. Every field is header material; the body stays sealed. */
 export interface Envelope {
   readonly version: number;
@@ -161,11 +174,15 @@ export function decodeEnvelope(bytes: Uint8Array): Envelope {
     throw new EnvelopeError(`unsupported cipher suite ${suite}`);
   }
 
-  const senderDid = reader.takeString('sender DID');
-  const recipientDid = reader.takeString('recipient DID');
+  const senderDid = reader.takeString('sender DID', MAX_DID_BYTES);
+  const recipientDid = reader.takeString('recipient DID', MAX_DID_BYTES);
   const epk = reader.take(EPK_LEN, 'ephemeral public key');
   const nonce = reader.take(NONCE_LEN, 'nonce');
-  const ciphertext = reader.take(reader.takeU32('ciphertext length'), 'ciphertext');
+  const ciphertextLength = reader.takeU32('ciphertext length');
+  if (ciphertextLength > MAX_CIPHERTEXT_BYTES) {
+    throw new EnvelopeError(`the ciphertext is longer than ${MAX_CIPHERTEXT_BYTES} bytes`);
+  }
+  const ciphertext = reader.take(ciphertextLength, 'ciphertext');
   reader.expectEnd();
 
   return { version, suite, senderDid, recipientDid, epk, nonce, ciphertext };
@@ -185,8 +202,6 @@ export function associatedData(
   const bytes = new Uint8Array(
     MAGIC.length + 2 + 2 + sender.length + 2 + recipient.length + EPK_LEN,
   );
-  void sender;
-  void recipient;
   const view = new DataView(bytes.buffer);
   let at = 0;
   bytes.set(MAGIC, at);
@@ -250,10 +265,18 @@ class Reader {
     return new DataView(bytes.buffer, bytes.byteOffset, 4).getUint32(0, false);
   }
 
-  /** A u16-prefixed UTF-8 string, rejected if it is not valid UTF-8. */
-  takeString(role: string): string {
+  /**
+   * A u16-prefixed UTF-8 string, rejected if it is empty, longer than `maxBytes`, or not valid UTF-8.
+   *
+   * The length bound mirrors the write path (`encodeEnvelope` refuses to emit a DID outside
+   * `1..=maxBytes`), so a hostile or buggy peer cannot smuggle an out-of-range DID past the reader
+   * that the writer would never have produced.
+   */
+  takeString(role: string, maxBytes: number): string {
     const lengthBytes = this.take(2, `${role} length`);
     const length = new DataView(lengthBytes.buffer, lengthBytes.byteOffset, 2).getUint16(0, false);
+    if (length === 0) throw new EnvelopeError(`the ${role} is empty`);
+    if (length > maxBytes) throw new EnvelopeError(`the ${role} is longer than ${maxBytes} bytes`);
     const bytes = this.take(length, role);
     try {
       return new TextDecoder('utf-8', { fatal: true }).decode(bytes);

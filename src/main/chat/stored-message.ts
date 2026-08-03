@@ -8,6 +8,7 @@
  */
 
 import type { ChatMessage, Direction } from './conversation';
+import { sanitizeIdentifier, sanitizePeerText } from './peer-text';
 
 /** The two directions a stored message may carry, so an unknown value is rejected on load. */
 const DIRECTIONS: readonly Direction[] = ['sent', 'received'];
@@ -29,4 +30,20 @@ export function isStoredMessage(value: unknown): value is ChatMessage {
   );
 }
 
-// TODO(#2030): main-process hardening — sanitise dedup, typed error, envelope bounds, atomic credential write.
+/**
+ * Re-neutralise the peer-chosen text on a stored message, returning a fresh copy.
+ *
+ * A stored message's `peerDid` and `body` are whatever the other end chose, read back from a file
+ * another process could have edited — so every reader (sealed history, passphrase archive, merge, the
+ * conversation restore) must scrub them again on the way in, not trust the form on disk. That scrub
+ * lived copied verbatim in four modules; it lives here once, beside {@link isStoredMessage}, so the
+ * neutralisation cannot drift between the readers that all depend on it. The `id`, `direction` and
+ * `at` fields are shape-checked (never rendered as peer text) and pass through unchanged.
+ */
+export function sanitizeStoredMessage(message: ChatMessage): ChatMessage {
+  return {
+    ...message,
+    peerDid: sanitizeIdentifier(message.peerDid),
+    body: sanitizePeerText(message.body),
+  };
+}
