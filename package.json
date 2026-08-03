@@ -1,6 +1,6 @@
 {
   "name": "@dignetwork/dig-chat",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "private": true,
   "description": "DIG Chat — DID-identity, end-to-end encrypted chat. Pairs into the DIG App for identity; never holds your money keys.",
   "license": "MIT",

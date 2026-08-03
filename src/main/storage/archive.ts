@@ -50,6 +50,19 @@ export const ARCHIVE_VERSION = 1;
  */
 export const ARCHIVE_MAX_BYTES = 4 * 1_024 * 1_024;
 
+/**
+ * The tunable Argon2id cost — memory (KiB), passes, and lanes.
+ *
+ * Injectable ONLY so the test suite can derive at a cheap factor (#2029); production callers omit it and
+ * take {@link KDF}. The algorithm and key length are NOT tunable: only the work factor moves, so the
+ * crypto path is identical whatever the cost.
+ */
+export interface KdfParams {
+  readonly m: number;
+  readonly t: number;
+  readonly p: number;
+}
+
 /** Argon2id work factors (SPEC §5.7). Interactive-desktop tuned: 64 MiB, three passes, single lane. */
 const KDF = { algo: 'argon2id', m: 65_536, t: 3, p: 1 } as const;
 
@@ -96,15 +109,20 @@ interface ArchivePayload {
  * A fresh random salt and nonce are drawn per call, so two exports of the same history are distinct
  * ciphertexts and no nonce is ever reused under a derived key.
  */
-export function encodeArchive(passphrase: string, messages: readonly ChatMessage[]): Buffer {
+export function encodeArchive(
+  passphrase: string,
+  messages: readonly ChatMessage[],
+  kdf: KdfParams = KDF,
+): Buffer {
   const salt = randomBytes(SALT_BYTES);
   const nonce = randomBytes(NONCE_BYTES);
-  const key = deriveKey(passphrase, salt);
+  const key = deriveKey(passphrase, salt, kdf);
 
   const header: ArchiveHeader = {
     magic: ARCHIVE_MAGIC,
     v: ARCHIVE_VERSION,
-    kdf: { ...KDF, saltB64: salt.toString('base64') },
+    // The header records the cost actually used, so it stays AAD-bound and self-describing.
+    kdf: { algo: 'argon2id', m: kdf.m, t: kdf.t, p: kdf.p, saltB64: salt.toString('base64') },
     cipher: 'AES-256-GCM',
     nonceB64: nonce.toString('base64'),
   };
@@ -134,12 +152,18 @@ export function encodeArchive(passphrase: string, messages: readonly ChatMessage
  * sanitiser (§5.5) because the archive is an untrusted file. Any failure throws; nothing partial is
  * ever returned.
  *
+ * @param kdf the Argon2id cost to derive with — defaults to production {@link KDF}; supplied only by
+ *   tests. It is DELIBERATELY not read from the archive header (a header-driven cost is a DoS vector).
  * @throws {ArchiveTooLargeError} the bytes exceed {@link ARCHIVE_MAX_BYTES} — refused before any parse.
  * @throws {ArchiveFormatError} the bytes are not a well-formed archive container.
  * @throws {ArchiveUnsupportedVersionError} the container version is not one this build reads.
  * @throws {ArchiveDecryptError} authentication failed — wrong passphrase or corrupt/tampered file.
  */
-export function decodeArchive(passphrase: string, bytes: Buffer): ChatMessage[] {
+export function decodeArchive(
+  passphrase: string,
+  bytes: Buffer,
+  kdf: KdfParams = KDF,
+): ChatMessage[] {
   // The size guard runs FIRST, before JSON.parse, so an oversize file is rejected without ever being
   // materialised as a parsed value — the cheap check that stops a self-inflicted OOM (#2020).
   if (bytes.length > ARCHIVE_MAX_BYTES) throw new ArchiveTooLargeError(bytes.length);
@@ -151,18 +175,28 @@ export function decodeArchive(passphrase: string, bytes: Buffer): ChatMessage[] 
   const salt = Buffer.from(container.kdf.saltB64, 'base64');
   const nonce = Buffer.from(container.nonceB64, 'base64');
   const sealed = Buffer.from(container.ctB64, 'base64');
-  const key = deriveKey(passphrase, salt);
+  // SECURITY: derive from the caller-supplied cost (default = production {@link KDF}), NEVER from
+  // `container.kdf`. The header is untrusted input; deriving from its m/t/p would let a hostile archive
+  // set m=huge and turn a mere decode attempt into an Argon2 memory-DoS on the main process. The header
+  // params stay informational + AAD-bound only — they authenticate the export's own choice, they do not
+  // steer this decode's work factor.
+  const key = deriveKey(passphrase, salt, kdf);
 
   const plaintext = openSealed(container, key, nonce, sealed);
   return sanitiseMessages(parsePayload(plaintext));
 }
 
-/** Argon2id(utf8(passphrase), salt) → 32-byte key, at the locked work factors. */
-function deriveKey(passphrase: string, salt: Buffer): Buffer {
+/**
+ * Argon2id(utf8(passphrase), salt) → 32-byte key, at the given work factors.
+ *
+ * The cost is always the caller's (default = production {@link KDF}), never one read from the archive
+ * header — see the SECURITY note in {@link decodeArchive}: a header-driven cost is a memory-DoS vector.
+ */
+function deriveKey(passphrase: string, salt: Buffer, kdf: KdfParams): Buffer {
   const key = argon2id(new TextEncoder().encode(passphrase), salt, {
-    m: KDF.m,
-    t: KDF.t,
-    p: KDF.p,
+    m: kdf.m,
+    t: kdf.t,
+    p: kdf.p,
     dkLen: KEY_BYTES,
   });
   return Buffer.from(key);
