@@ -109,3 +109,10 @@ Windows) `resources/elevate.exe`, so a `*.exe` glob has more than one candidate.
 dig-chat's `package.json` name is `@dignetwork/dig-chat`, so `${name}-${version}…` would render a
 slash into the file name. The prefix is written out literally instead, and a test pins it to the
 `asset_prefix` the feed declares.
+
+The scope leaks a second way, and this one is fatal rather than cosmetic: electron-builder derives
+`executableName` from the package name, sanitising `@dignetwork/dig-chat` to `@dignetworkdig-chat`,
+and then REFUSES it — _"executableName contains characters that cannot be safely used in file
+paths"_. The AppImage build fails outright while the Windows `portable` build, which does not use
+`executableName`, succeeds. Any scoped Electron package therefore has to set `linux.executableName`
+explicitly.

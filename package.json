@@ -93,7 +93,10 @@
         }
       ],
       "category": "Network",
-      "artifactName": "dig-chat-${version}-linux-x64.${ext}"
+      "artifactName": "dig-chat-${version}-linux-x64.${ext}",
+      "executableName": "dig-chat",
+      "desktopName": "dig-chat.desktop",
+      "synopsis": "DID-identity, end-to-end encrypted chat"
     }
   }
 }
