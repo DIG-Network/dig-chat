@@ -48,6 +48,7 @@
     "@types/ws": "8.5.14",
     "@vitejs/plugin-react": "4.3.4",
     "@vitest/coverage-v8": "2.1.9",
+    "ajv": "^8.20.0",
     "electron": "33.4.11",
     "electron-builder": "26.15.3",
     "electron-vite": "2.3.0",
@@ -95,7 +96,6 @@
       "category": "Network",
       "artifactName": "dig-chat-${version}-linux-x64.${ext}",
       "executableName": "dig-chat",
-      "desktopName": "dig-chat.desktop",
       "synopsis": "DID-identity, end-to-end encrypted chat"
     }
   }
