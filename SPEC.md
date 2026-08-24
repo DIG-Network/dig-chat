@@ -518,3 +518,53 @@ For dig-chat to reach `connected` and exchange a message, the DIG App must add:
    over it.
 6. A test asserting that a pairing holding only identity capabilities is refused `sign.request` with
    `CAP_NOT_GRANTED`.
+
+---
+
+## 8. Distribution
+
+DIG Chat is delivered and kept current by the DIG update beacon (`dig-updater`), which downloads a
+signed manifest, verifies each artifact's digest and swaps the installed file in place. This section
+is the contract that makes that possible; it is normative because the beacon matches on exact strings
+and a mismatch resolves to nothing rather than to an error.
+
+### 8.1 Artifact shape
+
+Each supported platform MUST receive exactly ONE self-contained file. dig-chat is a **raw-binary**
+component: the beacon installs it by replacing a single executable, so a directory tree, an installer
+package, or an archive is not installable.
+
+| platform        | electron-builder target | release asset                        |
+| --------------- | ----------------------- | ------------------------------------ |
+| `windows`/`x64` | `portable`              | `dig-chat-<version>-windows-x64.exe` |
+| `linux`/`x64`   | `AppImage`              | `dig-chat-<version>-linux-x64`       |
+
+The name is `{prefix}-{version}-{os}-{arch}`, with `.exe` appended on Windows and NO extension
+elsewhere — the beacon reconstructs precisely that string. The `os` and `arch` tokens are the
+manifest's vocabulary (`windows`, `linux`, `macos`; `x64`, `arm64`), NOT electron-builder's
+(`win`, `mac`).
+
+### 8.2 Platforms deliberately not published
+
+`macos`/`x64`, `macos`/`arm64` and `linux`/`arm64` publish no artifact and MUST be declared as feed
+exemptions. macOS is blocked on a Developer ID certificate — an unsigned build fails Gatekeeper, so
+shipping one would deliver an application that cannot open. `linux`/`arm64` has no build runner. An
+exemption is dropped only when that platform's artifact is actually published; dropping one first
+reds the feed's completeness gate instead of producing an update.
+
+There is no `windows`/`arm64` row because the beacon does not ship that platform.
+
+### 8.3 The installed version is established by DIGEST, never by execution
+
+The beacon MUST NOT execute the dig-chat binary to learn its version. The beacon runs as SYSTEM or
+root; an Electron main process does not parse `--version` and would instead boot a GUI application
+under the machine account. The installed build is therefore established by hashing the destination
+file against the signed manifest artifact's `sha256` — the same evidence dig-app uses, and for the
+same reason.
+
+### 8.4 A release without assets is not a release
+
+A cut tag, a green workflow, and an attached artifact are three different facts. A release is
+publishable only once every asset in §8.1 is attached AND carries bytes: GitHub creates an asset row
+before its content lands, so presence alone does not establish that the artifact exists. The release
+workflow drafts the release, attaches, verifies names and sizes, and only then publishes.

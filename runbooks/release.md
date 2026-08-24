@@ -48,7 +48,10 @@ Once CI is green on `main`:
    did not increase, so by this point it already is.
 3. Run the release workflow: **Actions → Release → Run workflow**, `channel: stable`.
 4. Watch it: `gh run watch --repo DIG-Network/dig-chat`.
-5. Verify the tag points where you think: `gh api repos/DIG-Network/dig-chat/git/ref/tags/vX.Y.Z`.
+5. If a build leg fails, **do not bump the version to retry.** The tag and a DRAFT release already
+   exist, and re-running the workflow resumes that draft. Only a PUBLISHED release refuses a re-cut,
+   because a published version is immutable and a draft is just the debris of a failed attempt.
+6. Verify the tag points where you think: `gh api repos/DIG-Network/dig-chat/git/ref/tags/vX.Y.Z`.
    An **annotated** tag returns the tag OBJECT's sha — dereference it to the commit before anyone
    bumps a submodule pointer to it.
 
@@ -62,10 +65,40 @@ dereferences to; for a CI-only change that cuts no release, pin the merged `main
 
 ## Verifying a release is real
 
-A green workflow is not a shipped artifact. Check the artifact:
+A green workflow is not a shipped artifact, and an attached asset row is not attached BYTES — GitHub
+creates the row before the content lands. Check names and sizes together:
 
 ```bash
-gh release view vX.Y.Z --repo DIG-Network/dig-chat
+gh release view vX.Y.Z --repo DIG-Network/dig-chat --json assets   --jq '.assets[] | "\(.name)  \(.size)"'
 ```
 
-and confirm a per-platform binary is attached. A release with no assets is a tag, not a release.
+Both of these must be present, each tens of megabytes (a packaged Electron build is ~75 MB):
+
+- `dig-chat-X.Y.Z-windows-x64.exe`
+- `dig-chat-X.Y.Z-linux-x64`
+
+The release workflow asserts exactly this before it publishes, so a published release that fails the
+check should be impossible; run it anyway, because the check that never runs is the one that rots.
+
+macOS and `linux/arm64` publish nothing on purpose (SPEC §8.2). Their absence is correct.
+
+## Once the artifacts exist
+
+The update beacon only ships what the feed declares. After the first release publishes, the
+`dig-updater` repository needs BOTH, in one pull request:
+
+1. `feed-config.json` — the `dig-chat` component entry, with the three platform exemptions. This is
+   what the served manifest is built from.
+2. `crates/dig-updater-broker/src/plan.rs` — the install catalog entry (`RawBinary`,
+   `VersionEvidence::ArtifactDigest`).
+
+Editing only the catalog declares a component that is never published; editing only the feed leaves
+the installer unaware of it. Verify the outcome by FETCHING the manifest rather than by reading the
+config back:
+
+```bash
+curl -s https://updates.dig.net/v1/stable/manifest.json | jq '.components[] | select(.name=="dig-chat")'
+```
+
+`updates.dig.net` denies bucket listing and answers `403` for anything missing, so control the probe
+against a path you know is absent before reading a `403` as breakage.
