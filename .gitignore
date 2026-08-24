@@ -4,4 +4,6 @@ dist/
 coverage/
 *.log
 .DS_Store
-release/
+# Anchored to the repository root. An UNanchored `release/` also matches `tests/release/`,
+# which silently excluded this feature's entire test directory from a commit.
+/release/

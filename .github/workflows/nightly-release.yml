@@ -1,0 +1,216 @@
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# The NIGHTLY channel.
+#
+# The update feed tracks the SAME component set on both channels (dig-updater SPEC §10.3), so a
+# component that publishes only stable makes the nightly feed unresolvable — `feedsign doctor
+# --channel nightly` fails on it, and one component failing fails the run closed. dig-chat therefore
+# needs a rolling `nightly` release for the same reason it needs a stable one: not because anyone is
+# asked to run it, but because the feed cannot be assembled without it.
+#
+# Every night this builds `main` HEAD and publishes a PRE-release (never `latest`) under a dated
+# `nightly-YYYYMMDD` tag plus a force-moved rolling `nightly` tag, so a fresh nightly exists whether
+# or not the version was bumped. The stable channel is cut only by a manual dispatch of release.yml,
+# and this cron NEVER cuts a stable `vX.Y.Z`.
+#
+# The nightly version `X.Y.Z-nightly.YYYYMMDD.<shortsha>` is a semver PRERELEASE, so it sorts BELOW
+# the plain `X.Y.Z` and a nightly can never outrank the stable release of the same version. It is
+# stamped into `package.json` at BUILD time and never committed — which also means the artifact
+# NAMES carry it, and the feed recovers a nightly's version from those names rather than from the
+# rolling tag, which says only `nightly`.
+#
+# 60-day auto-disable: GitHub disables a `schedule:` trigger after 60 days with no repository
+# activity, and does not re-enable it. If nightlies stop silently, check
+# `gh api repos/DIG-Network/dig-chat/actions/workflows/nightly-release.yml --jq .state`.
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+name: Nightly release
+
+permissions:
+  contents: write
+
+on:
+  # GitHub Actions cron is always UTC. A late nightly is acceptable; the run is idempotent.
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.19.4'
+
+jobs:
+  meta:
+    name: resolve the nightly version
+    # Bound to main for the same reason the release workflow is: this job's outputs drive a
+    # RELEASE_TOKEN-authenticated tag push, so it must only ever describe reviewed main code.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      token_present: ${{ steps.token.outputs.present }}
+      version: ${{ steps.v.outputs.version }}
+      dated_tag: ${{ steps.v.outputs.dated_tag }}
+      title: ${{ steps.v.outputs.title }}
+    steps:
+      - name: require RELEASE_TOKEN, else no-op
+        id: token
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          if [ -z "$RELEASE_TOKEN" ]; then
+            echo "::warning::RELEASE_TOKEN is not set — the nightly pre-release is a NO-OP until the org PAT secret is added (runbooks/release.md)."
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.token.outputs.present == 'true'
+        with:
+          persist-credentials: false
+      - name: synthesize the version + tags
+        if: steps.token.outputs.present == 'true'
+        id: v
+        run: |
+          set -euo pipefail
+          base=$(node -p "require('./package.json').version")
+          date=$(date -u +%Y%m%d)
+          shortsha=$(git rev-parse --short HEAD)
+          echo "version=${base}-nightly.${date}.${shortsha}" >> "$GITHUB_OUTPUT"
+          echo "dated_tag=nightly-${date}" >> "$GITHUB_OUTPUT"
+          echo "title=Nightly $(date -u +%Y-%m-%d) (${shortsha})" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: ${{ matrix.os_token }}/x64 artifact
+    needs: meta
+    if: needs.meta.outputs.token_present == 'true'
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            os_token: windows
+            builder_flag: --win
+          - runner: ubuntu-latest
+            os_token: linux
+            builder_flag: --linux
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      # Stamping the version into package.json rather than passing it to the packager is what makes
+      # the ARTIFACT NAMES carry it — electron-builder renders its artifactName `${version}` from
+      # this file, and the feed recovers a nightly's version from the asset names because the
+      # rolling tag does not carry one. It also keeps the app's own self-reported version honest
+      # (ecosystem §6.7), since the renderer injects the same value at build time. Never committed.
+      - name: stamp the nightly version
+        shell: bash
+        env:
+          NIGHTLY_VERSION: ${{ needs.meta.outputs.version }}
+        run: |
+          set -euo pipefail
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version=process.env.NIGHTLY_VERSION;fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n');"
+          test "$(node -p "require('./package.json').version")" = "$NIGHTLY_VERSION"
+      - run: npm run build
+      - name: package a single-file artifact
+        run: npx electron-builder ${{ matrix.builder_flag }} --x64 --publish never
+      - name: stage it under its release-asset name
+        id: stage
+        shell: bash
+        env:
+          NIGHTLY_VERSION: ${{ needs.meta.outputs.version }}
+          OS_TOKEN: ${{ matrix.os_token }}
+        run: |
+          set -euo pipefail
+          staged=$(node scripts/stage-artifact-cli.mjs release "$NIGHTLY_VERSION" "$OS_TOKEN" x64)
+          echo "path=$staged" >> "$GITHUB_OUTPUT"
+          ls -l "$staged"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nightly-${{ matrix.os_token }}
+          path: ${{ steps.stage.outputs.path }}
+          if-no-files-found: error
+
+  publish:
+    name: publish + prune
+    needs: [meta, build]
+    if: needs.meta.outputs.token_present == 'true'
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      REPO: ${{ github.repository }}
+      DATED_TAG: ${{ needs.meta.outputs.dated_tag }}
+      TITLE: ${{ needs.meta.outputs.title }}
+      NIGHTLY_VERSION: ${{ needs.meta.outputs.version }}
+      # How many dated nightlies to retain. The rolling `nightly` and every `v*` stable release are
+      # never pruned.
+      KEEP_NIGHTLIES: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: flatten
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          find artifacts -type f -exec cp {} release/ \;
+          ls -l release
+      - name: move the nightly tags to this build
+        run: |
+          set -euo pipefail
+          # A CI checkout carries no committer identity. This is the release automation's own.
+          git config user.name "dig-release"
+          git config user.email "release@dig.net"
+          # Forced so a same-day re-run and the moving rolling pointer are both idempotent. Neither
+          # tag matches release.yml's trigger, so no stable release fires.
+          git push -f origin "HEAD:refs/tags/${DATED_TAG}"
+          git push -f origin "HEAD:refs/tags/nightly"
+      - name: publish the dated + rolling pre-releases
+        run: |
+          set -euo pipefail
+          notes="Automated nightly pre-release built from main HEAD (${TITLE}). Version ${NIGHTLY_VERSION}. NOT a stable release."
+
+          # Delete-then-upload rather than --clobber: each night's filenames embed that night's date
+          # and sha, so clobbering (which only replaces SAME-named assets) would never remove the
+          # previous night's differently-named leftovers from the rolling release, and they would
+          # accumulate forever. The brief assetless window mid-step is acceptable on a pre-release
+          # channel; the stable path never takes it.
+          refresh() {
+            local tag="$1"
+            gh release view "$tag" --repo "$REPO" >/dev/null 2>&1 \
+              || gh release create "$tag" --repo "$REPO" --verify-tag \
+                   --prerelease --latest=false --title "$TITLE" --notes "$notes"
+            gh release edit "$tag" --repo "$REPO" --prerelease --latest=false --title "$TITLE" >/dev/null
+            gh release view "$tag" --repo "$REPO" --json assets --jq '.assets[].name' \
+              | while read -r asset; do
+                  [ -n "$asset" ] && gh release delete-asset "$tag" "$asset" --repo "$REPO" --yes
+                done
+            gh release upload "$tag" release/* --repo "$REPO"
+          }
+          refresh "${DATED_TAG}"
+          refresh "nightly"
+      # The same assertion the stable channel makes, for the same reason: an upload can fail after
+      # the job that produced the file succeeded, and an asset row exists before its bytes do. The
+      # rolling `nightly` is the release the feed actually resolves, so it is the one checked.
+      - name: the rolling nightly must carry every expected artifact
+        run: |
+          set -euo pipefail
+          gh release view nightly --repo "$REPO" --json assets \
+            | node scripts/verify-release-assets-cli.mjs "$NIGHTLY_VERSION"
+      - name: prune old dated nightlies
+        run: |
+          set -euo pipefail
+          # Listed as its own statement so a real API failure reds the step rather than being masked
+          # into a silent empty prune; only the grep's "no match" exit 1 is tolerated.
+          all=$(gh release list --repo "$REPO" --limit 1000 --json tagName --jq '.[].tagName')
+          mapfile -t dated < <(printf '%s\n' "$all" | grep -E '^nightly-[0-9]{8}$' | sort -r || [ $? -eq 1 ])
+          for tag in "${dated[@]:$KEEP_NIGHTLIES}"; do
+            echo "pruning $tag"
+            gh release delete "$tag" --repo "$REPO" --yes --cleanup-tag
+          done
