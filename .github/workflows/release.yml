@@ -144,3 +144,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: gh release edit "v${{ needs.cut.outputs.version }}" --draft=false --latest
+      # A component release is INVISIBLE to every beacon until the update feed is re-signed, and the
+      # feed's own cron is six-hourly — so without this the release looks perfectly green (tag live,
+      # marked latest, all assets present) while nobody can actually receive it for up to six hours.
+      # The coupling is invisible from this repo, which is why the natural place to look for that bug
+      # is the wrong one. dig_ecosystem#3046.
+      #
+      # `repository_dispatch` specifically: it always runs on the DEFAULT branch, so the feed's
+      # signing guard passes by construction. A `release`-triggered run would have `github.ref` set
+      # to the tag, every job would silently skip, and the run would still report `completed`.
+      - name: wake the update feed
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh api repos/DIG-Network/dig-updater/dispatches             -f event_type=component-released             -F 'client_payload[component]=dig-chat'             -F "client_payload[version]=${{ needs.cut.outputs.version }}"
