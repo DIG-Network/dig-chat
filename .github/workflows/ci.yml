@@ -41,6 +41,30 @@ jobs:
       - name: build
         run: npm run build
 
+  # Packaging is exercised on every PR, not first discovered at release time. The value is not that
+  # electron-builder exits zero — it is that the staging step then finds ONE regular file of a
+  # plausible size under the exact name dig-updater reconstructs. A config change that silently stops
+  # producing that file reds here instead of producing an unshippable release.
+  package:
+    name: single-file artifact (linux/x64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - run: npx electron-builder --linux --x64 --publish never
+      - name: the build must yield one usable file under the beacon's expected name
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          staged=$(node scripts/stage-artifact-cli.mjs release "$version" linux x64)
+          ls -l "$staged"
+          test -f "$staged"
+
   commitlint:
     name: commit messages
     runs-on: ubuntu-latest

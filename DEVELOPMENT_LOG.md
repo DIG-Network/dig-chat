@@ -82,3 +82,30 @@ value to a local and guard it (`const primary = parts[0]; if (!primary) …`) ra
 twice, and `messagesFor` needs a `?? en` fallback even after an `isSupportedLocale` guard, because the
 guard narrows the KEY but not the record's value type. Straight ports of code from a repo without this
 flag (e.g. hub's `locales.ts`) will not typecheck until these guards are added.
+
+## Electron CAN produce a single-file artifact on Windows and Linux — `portable` and `AppImage`
+
+The premise that "Electron cannot ship one file, so dig-chat needs a native installer" is false on the
+two platforms that matter. electron-builder's `portable` target emits one self-extracting `.exe`
+(measured: 73,980,702 bytes for dig-chat 0.5.0, Electron 33.4.11), and `AppImage` emits one executable
+file. Only macOS genuinely cannot, and macOS is separable through the feed's `exempt_platforms`
+mechanism. This is what lets dig-chat be a **raw-binary** beacon component like dig-app, rather than
+the three-pipeline native-package shape dig-node needs because it is a machine service.
+
+A native package would also install a PER-USER GUI machine-wide and elevated, and an unsigned macOS
+`.pkg` still fails Gatekeeper — so it buys nothing on the only platform it was chosen for.
+
+## electron-builder ALWAYS appends the target's extension, so the Linux asset needs a rename
+
+`artifactName` renders `${ext}` from the target, and the beacon's raw-binary convention has NO
+extension outside Windows. So `AppImage` necessarily produces `dig-chat-0.5.0-linux-x64.AppImage`
+while the feed looks for `dig-chat-0.5.0-linux-x64`, and the release must rename before attaching. The
+staging step therefore knows both names, and it selects the built file by EXACT name rather than by
+globbing an extension: `release/` also holds `builder-debug.yml`, a `win-unpacked/` directory and (on
+Windows) `resources/elevate.exe`, so a `*.exe` glob has more than one candidate.
+
+## `${name}` in an artifactName is the package name INCLUDING its npm scope
+
+dig-chat's `package.json` name is `@dignetwork/dig-chat`, so `${name}-${version}…` would render a
+slash into the file name. The prefix is written out literally instead, and a test pins it to the
+`asset_prefix` the feed declares.

@@ -14,10 +14,18 @@ on:
         type: choice
         options: [stable]
 
+env:
+  NODE_VERSION: '20.19.4'
+
 jobs:
-  release:
-    name: cut vX.Y.Z
+  # The release is created as a DRAFT and published only once its artifacts are attached and
+  # verified. Attaching an asset promotes a release to `latest`, so a release published before its
+  # uploads would advertise a version the beacon can resolve a tag for and find no artifact behind.
+  cut:
+    name: cut the tag + draft the release
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,11 +35,10 @@ jobs:
           token: ${{ secrets.RELEASE_TOKEN }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.19.4'
+          node-version: ${{ env.NODE_VERSION }}
           cache: npm
-      - run: npm ci
-      - run: npm run build
       - name: cut the tag
+        id: tag
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
@@ -41,8 +48,85 @@ jobs:
             echo "::error::v$version already exists — bump package.json first"
             exit 1
           fi
+          # A CI checkout carries no committer identity and `git tag -a` refuses without one. This
+          # is the release automation's own identity, not a person's.
           git config user.name "dig-release"
           git config user.email "release@dig.net"
           git tag -a "v$version" -m "dig-chat v$version"
           git push origin "v$version"
-          gh release create "v$version" --title "dig-chat v$version" --generate-notes
+          gh release create "v$version" --draft --title "dig-chat v$version" --generate-notes
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  build:
+    name: ${{ matrix.os_token }}/x64 artifact
+    needs: cut
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      # One leg failing must not cancel the other: knowing BOTH outcomes in one run is what turns a
+      # re-dispatch into a single fix rather than a sequence of them.
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            os_token: windows
+            builder_flag: --win
+          - runner: ubuntu-latest
+            os_token: linux
+            builder_flag: --linux
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.cut.outputs.version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: build the app bundles
+        run: npm run build
+      # `--publish never` keeps electron-builder out of the release entirely. Uploading is done
+      # below, AFTER the shape of what was produced has been checked.
+      - name: package a single-file artifact
+        run: npx electron-builder ${{ matrix.builder_flag }} --x64 --publish never
+      # "The build was green" is not "a usable artifact exists". This asserts one regular file of a
+      # plausible size under the exact name the beacon reconstructs, and renames it if the target's
+      # own extension is not part of that name.
+      - name: stage the artifact under its release-asset name
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          staged=$(node scripts/stage-artifact-cli.mjs release "${{ needs.cut.outputs.version }}" "${{ matrix.os_token }}" x64)
+          echo "path=$staged" >> "$GITHUB_OUTPUT"
+          ls -l "$staged"
+      - name: attach it to the draft release
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: gh release upload "v${{ needs.cut.outputs.version }}" "${{ steps.stage.outputs.path }}" --clobber
+
+  publish:
+    name: verify the assets, then publish
+    needs: [cut, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.cut.outputs.version }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      # Read the RELEASE's own asset list rather than trusting the build jobs: an upload can fail
+      # after the step that produced the file has already succeeded, and an asset row exists before
+      # its bytes do. Sizes are checked for exactly that reason.
+      - name: the release must carry every expected artifact
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release view "v${{ needs.cut.outputs.version }}" --json assets \
+            | node scripts/verify-release-assets-cli.mjs "${{ needs.cut.outputs.version }}"
+      - name: publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: gh release edit "v${{ needs.cut.outputs.version }}" --draft=false --latest
