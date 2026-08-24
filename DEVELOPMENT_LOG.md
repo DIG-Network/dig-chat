@@ -149,3 +149,16 @@ because the rolling `nightly` tag carries no version and the feed recovers one b
 prefix and suffix from the file name. Verified by building: electron-builder renders the prerelease
 into `artifactName` verbatim, hyphens and dots intact —
 `dig-chat-0.5.0-nightly.20260824.abc1234-windows-x64.exe`.
+
+## A release that does not wake the feed is invisible for up to six hours
+
+Publishing a GitHub Release is not shipping. Users install from the signed update feed, and the feed
+is re-signed on a six-hourly cron — so a release with a live tag, `latest` set and every asset
+attached reaches nobody until the next signing run. Every signal in this repository reads green
+throughout, because the coupling lives in a different repository.
+
+The fix is a `repository_dispatch` to `DIG-Network/dig-updater` with
+`event_type=component-released` on a successful publish, from BOTH channels. `repository_dispatch`
+specifically, not a `release:` trigger: a dispatch always runs on the default branch, so the feed's
+signing guard passes by construction, while a release-triggered run would carry the TAG as
+`github.ref`, silently skip every job, and still report `completed`.

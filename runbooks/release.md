@@ -82,6 +82,21 @@ check should be impossible; run it anyway, because the check that never runs is 
 
 macOS and `linux/arm64` publish nothing on purpose (SPEC §8.2). Their absence is correct.
 
+## The release is not shipped until the feed carries it
+
+Users install from the signed update feed, not from the GitHub Release. The release workflow
+dispatches `component-released` to dig-updater on publish, which re-signs the feed within a couple of
+minutes; the feed's own six-hourly cron is the backstop, not the mechanism. Confirm the version
+actually arrived:
+
+```bash
+curl -s https://updates.dig.net/v1/stable/manifest.json | jq '.manifest.components[] | select(.name=="dig-chat")'
+```
+
+`updates.dig.net` denies bucket listing and answers `403` for anything missing, so control the probe
+against a path you know is absent before reading a `403` as breakage. Note the manifest is an
+envelope: the components live under `.manifest`, beside `.signature`.
+
 ## Once the artifacts exist
 
 The update beacon only ships what the feed declares. After the first release publishes, the
