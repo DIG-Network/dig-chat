@@ -82,3 +82,4 @@ value to a local and guard it (`const primary = parts[0]; if (!primary) …`) ra
 twice, and `messagesFor` needs a `?? en` fallback even after an `isSupportedLocale` guard, because the
 guard narrows the KEY but not the record's value type. Straight ports of code from a repo without this
 flag (e.g. hub's `locales.ts`) will not typecheck until these guards are added.
+
