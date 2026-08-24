@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint';
  * a function that outgrows them is asking to be split, and the lint says so before a reviewer has to.
  */
 export default tseslint.config(
-  { ignores: ['out/**', 'dist/**', 'coverage/**', 'node_modules/**'] },
+  { ignores: ['out/**', 'dist/**', 'release/**', 'coverage/**', 'node_modules/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -40,5 +40,14 @@ export default tseslint.config(
     // Tests reach for non-null assertions and long describe blocks by nature; neither is a smell there.
     files: ['tests/**/*.{ts,tsx}'],
     rules: { 'max-lines-per-function': 'off' },
+  },
+  {
+    // The release tooling is plain ESM run by Node from a workflow, never bundled into the app, so
+    // it is the one place here that legitimately reads `process` and writes to stdout.
+    files: ['scripts/**/*.mjs', 'tests/release/**/*.mjs'],
+    languageOptions: {
+      sourceType: 'module',
+      globals: { process: 'readonly', console: 'readonly', Buffer: 'readonly', URL: 'readonly' },
+    },
   },
 );
