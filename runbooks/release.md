@@ -48,7 +48,10 @@ Once CI is green on `main`:
    did not increase, so by this point it already is.
 3. Run the release workflow: **Actions → Release → Run workflow**, `channel: stable`.
 4. Watch it: `gh run watch --repo DIG-Network/dig-chat`.
-5. Verify the tag points where you think: `gh api repos/DIG-Network/dig-chat/git/ref/tags/vX.Y.Z`.
+5. If a build leg fails, **do not bump the version to retry.** The tag and a DRAFT release already
+   exist, and re-running the workflow resumes that draft. Only a PUBLISHED release refuses a re-cut,
+   because a published version is immutable and a draft is just the debris of a failed attempt.
+6. Verify the tag points where you think: `gh api repos/DIG-Network/dig-chat/git/ref/tags/vX.Y.Z`.
    An **annotated** tag returns the tag OBJECT's sha — dereference it to the commit before anyone
    bumps a submodule pointer to it.
 

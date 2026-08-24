@@ -44,8 +44,22 @@ jobs:
         run: |
           set -euo pipefail
           version=$(node -p "require('./package.json').version")
+
+          # A PUBLISHED release is immutable and must never be re-cut. A DRAFT one is the debris of
+          # an attempt that failed after tagging — most likely a build leg — and refusing it would
+          # force a version bump to recover from a transient failure, which is how a version series
+          # grows holes. So: refuse the published case, resume the draft case.
+          if gh release view "v$version" --json isDraft --jq .isDraft >/dev/null 2>&1; then
+            if [ "$(gh release view "v$version" --json isDraft --jq .isDraft)" = "false" ]; then
+              echo "::error::v$version is already published — bump package.json first"
+              exit 1
+            fi
+            echo "v$version is a draft from an earlier attempt; resuming it"
+            echo "version=$version" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           if git rev-parse "v$version" >/dev/null 2>&1; then
-            echo "::error::v$version already exists — bump package.json first"
+            echo "::error::tag v$version exists with no release behind it — delete the tag or bump"
             exit 1
           fi
           # A CI checkout carries no committer identity and `git tag -a` refuses without one. This
