@@ -116,3 +116,36 @@ and then REFUSES it — _"executableName contains characters that cannot be safe
 paths"_. The AppImage build fails outright while the Windows `portable` build, which does not use
 `executableName`, succeeds. Any scoped Electron package therefore has to set `linux.executableName`
 explicitly.
+
+## An UNANCHORED `release/` in `.gitignore` also matches `tests/release/`
+
+A gitignore pattern with a trailing slash and no LEADING slash matches a directory of that name at
+ANY depth. Ignoring electron-builder's output as `release/` therefore also excluded
+`tests/release/` — the entire test directory for the release tooling — and the four test files were
+never committed, while every local run and every CI run reported green.
+
+Nothing catches this. `git status` is silent by design, `git commit -A` adds nothing, and the CI
+suite passes because it is simply smaller. The only signal is the TEST COUNT, which is why a pass
+count is worth reading and a bare `pass` is not: locally the suite ran 1736 tests, and CI ran fewer.
+
+Anchor an output directory as `/release/`. The same trap applies to `dist/`, `out/` and `coverage/`
+in any repo whose tests are organised by feature.
+
+`.prettierignore` uses the same matching, so the same line hid the same directory from the formatter
+— `prettier --write tests/release` reported nothing and exited zero. That silence WAS the visible
+symptom, hours before the missing files were found, and it was read as ordinary quiet output. A
+formatter that reports no files for a path you just wrote to is saying the path is ignored.
+
+## The nightly channel is not optional for a feed component
+
+The update feed tracks the same component SET on both channels, so a component that publishes only
+stable makes the nightly feed unresolvable — `feedsign doctor --channel nightly` fails on it, and one
+component failing fails the whole run closed. Measured: adding dig-chat to `feed-config.json` turned a
+green nightly leg red purely because `releases/tags/nightly` returned 404.
+
+The nightly version is a semver PRERELEASE stamped into `package.json` at build time and never
+committed, so it sorts below the stable `X.Y.Z` of the same number. It has to reach the asset NAMES,
+because the rolling `nightly` tag carries no version and the feed recovers one by stripping the fixed
+prefix and suffix from the file name. Verified by building: electron-builder renders the prerelease
+into `artifactName` verbatim, hyphens and dots intact —
+`dig-chat-0.5.0-nightly.20260824.abc1234-windows-x64.exe`.
