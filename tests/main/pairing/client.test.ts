@@ -4,6 +4,7 @@ import type { Channel, RequestFrame } from '../../../src/main/pairing/channel';
 import {
   APP_ID,
   PairedChannel,
+  REFUSED_METHODS,
   REQUESTED_CAPABILITIES,
   pair,
   readCredential,
@@ -88,6 +89,7 @@ describe('pair', () => {
       'identity.seal',
       'identity.unseal',
     ]);
+    expect(REQUESTED_CAPABILITIES).not.toContain('spend.request');
     expect(REQUESTED_CAPABILITIES).not.toContain('sign.request');
     expect(JSON.stringify(params)).not.toContain('sign');
     // …and `pair.begin` carries no auth: there is no pairing yet to authenticate against.
@@ -200,15 +202,44 @@ describe('PairedChannel', () => {
     expect(channel.sent[1]!.auth!.nonce).toBeGreaterThan(channel.sent[0]!.auth!.nonce);
   });
 
-  it('refuses to put sign.request on the wire at all', async () => {
-    // Not a policy check duplicating dig-app's — a structural one. dig-app would refuse this with
-    // CAP_NOT_GRANTED anyway; the point is that a bug or a compromised dependency inside dig-chat
-    // cannot cause a money-moving request to be SENT under a pairing the user approved for chat.
+  it.each(['spend.request', 'sign.request'])(
+    'refuses to put %s on the wire at all',
+    async (method) => {
+      // Not a policy check duplicating dig-app's — a structural one. dig-app would refuse this with
+      // CAP_NOT_GRANTED anyway; the point is that a bug or a compromised dependency inside dig-chat
+      // cannot cause the request to be SENT under a pairing the user approved for chat.
+      //
+      // `spend.request` is the money method (dig-app SPEC §5.6.9) and is listed FIRST deliberately.
+      // Before dig_ecosystem#1552 this test named only `sign.request` — an identity attestation that
+      // cannot move a mojo — so it read as a money guard while asserting nothing about money.
+      const channel = new FakeChannel([null]);
+      const paired = new PairedChannel(channel, credential(), () => NOW);
+
+      await expect(paired.call(method, {})).rejects.toBeInstanceOf(ChannelError);
+      expect(channel.sent).toHaveLength(0);
+    },
+  );
+
+  it('sends an ordinary method, so the refusals above are about those methods', async () => {
+    // The CONTROL. Without it every refusal above is satisfied by a `call` that sends nothing at all,
+    // and the whole guard could be a broken transport reading as a security property.
     const channel = new FakeChannel([null]);
     const paired = new PairedChannel(channel, credential(), () => NOW);
 
-    await expect(paired.call('sign.request', {})).rejects.toBeInstanceOf(ChannelError);
-    expect(channel.sent).toHaveLength(0);
+    await paired.call('identity.attest', {});
+    expect(channel.sent).toHaveLength(1);
+  });
+
+  it('refuses every method in REFUSED_METHODS, so the list cannot grow unguarded', async () => {
+    // Pins the GUARD to the LIST rather than to two hard-coded names: a method added to
+    // REFUSED_METHODS but not to the guard would pass the cases above and fail here.
+    for (const method of REFUSED_METHODS) {
+      const channel = new FakeChannel([null]);
+      const paired = new PairedChannel(channel, credential(), () => NOW);
+      await expect(paired.call(method, {})).rejects.toBeInstanceOf(ChannelError);
+      expect(channel.sent).toHaveLength(0);
+    }
+    expect(REFUSED_METHODS).toContain('spend.request');
   });
 
   it('reports which capabilities it holds', () => {

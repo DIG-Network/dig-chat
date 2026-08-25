@@ -30,15 +30,36 @@ export const APP_LABEL = 'DIG Chat';
 /**
  * The capability set dig-chat asks for at pairing time — the identity class, and nothing else.
  *
- * `sign.request` is deliberately absent, and its absence is asserted by a test. A future edit that
+ * `spend.request` is deliberately absent, and its absence is asserted by a test. A future edit that
  * added it would hand a chat client the power to move money, which is the exact boundary
  * dig_ecosystem#1848 established and dig_ecosystem#1913 refused to dissolve.
+ *
+ * `sign.request` is absent too, for a DIFFERENT and weaker reason (dig_ecosystem#1552): it is a typed
+ * identity ATTESTATION and cannot move a mojo, so refusing it is chat declining a power it has no use
+ * for rather than chat declining money. Keeping the two reasons distinct matters, because a refusal
+ * justified on money grounds that names the wrong method is a refusal that stops nothing.
  */
 export const REQUESTED_CAPABILITIES = [
   'identity.attest',
   'identity.seal',
   'identity.unseal',
 ] as const;
+
+/**
+ * The methods dig-chat refuses to put on the wire at all, whoever asks (INV-2).
+ *
+ * `spend.request` is the money power (dig-app `SPEC.md` §5.6.9): it returns a broadcast-ready signed
+ * `SpendBundle` and can publish it. `sign.request` is a typed identity attestation (§5.6.5) that no
+ * consensus rule accepts.
+ *
+ * BOTH are listed, and listing only one would be worse than listing neither, because it would read as
+ * a money refusal while leaving the money method reachable. This list is the reason INV-2 is not
+ * vacuous.
+ */
+export const REFUSED_METHODS = ['spend.request', 'sign.request'] as const;
+
+/** One of the methods dig-chat refuses to send. */
+export type RefusedMethod = (typeof REFUSED_METHODS)[number];
 
 /** What dig-chat keeps after a successful pairing. The secret in it is a credential. */
 export interface PairingCredential {
@@ -170,10 +191,10 @@ export class PairedChannel {
    * @throws {ChannelUnreachableError} if the channel dropped.
    */
   async call(method: string, params: JsonValue): Promise<JsonValue> {
-    if (method === 'sign.request') {
-      // Structural, not a policy check. dig-chat has no legitimate reason to reach the signing
-      // oracle, and a bug or a compromised dependency that tried would be a money-moving request
-      // going out under a pairing the user approved for chat.
+    if (REFUSED_METHODS.includes(method as RefusedMethod)) {
+      // Structural, not a policy check. dig-chat has no legitimate reason to reach either the money
+      // path or the signing oracle, and a bug or a compromised dependency that tried would be that
+      // request going out under a pairing the user approved for chat.
       throw new ChannelError('CAP_NOT_GRANTED', -33050, 'error.capNotGranted');
     }
     const nonce = this.nextNonce();

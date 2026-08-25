@@ -21,8 +21,13 @@ obtains identity operations exclusively through the DIG App's pairing channel.
 
 - **INV-1.** dig-chat MUST NOT hold, derive, generate or persist any private key belonging to the
   user's DIG identity or wallet.
-- **INV-2.** dig-chat MUST NOT request, send or accept the `sign.request` capability. That capability
-  authorises spending; chat has no use for it.
+- **INV-2.** dig-chat MUST NOT request, send or accept the **`spend.request`** capability. That
+  capability authorises spending (dig-app `SPEC.md` §5.6.9); chat has no use for it. dig-chat MUST NOT
+  request or send `sign.request` either — but for a DIFFERENT and weaker reason: `sign.request` is a
+  typed identity ATTESTATION (§5.6.5) that no consensus rule accepts and that cannot move a mojo, so
+  refusing it is chat declining a power it has no use for, NOT chat declining money. Naming only
+  `sign.request` here would state a money refusal while leaving the money method reachable — a clause
+  that passes because the thing it governs never occurs (dig_ecosystem#1552).
 - **INV-3.** Every directed message MUST be sealed to the recipient's DID-anchored identity key
   before it is handed to any transport (NC-1). An intermediary that terminates TLS MUST see
   ciphertext only.
@@ -163,8 +168,14 @@ possibilities and the remedy.
 
 ### 3.1 Why it is a distinct capability
 
-`sign.request` is the power to move money. Chat needs the power to prove identity and to read what
-was written to you. These are different powers and are granted separately (dig_ecosystem#1913).
+`spend.request` is the power to move money (dig-app `SPEC.md` §5.6.9). Chat needs the power to prove
+identity and to read what was written to you. These are different powers and are granted separately
+(dig_ecosystem#1913).
+
+`sign.request` is a third power again, and a much smaller one: a typed identity attestation over a
+domain-separated `DIGNET-SIGN-v1` message, built so it cannot be replayed as a session attach or as
+any other slot-`0x0010` signature. It is not an `AGG_SIG_ME` and can never enter a broadcastable
+`SpendBundle`. dig-chat declines it as unnecessary, never as dangerous (dig_ecosystem#1552).
 
 The capability is named for what it DOES — `identity.*`, not `chat.*` — so a second application
 needing the same power requests the same capability rather than presenting itself as chat.
@@ -222,8 +233,14 @@ as an unverified label only.
 
 ### 3.5 Refusals
 
-A pairing holding only identity capabilities MUST be refused `sign.request` with `CAP_NOT_GRANTED`.
-dig-chat additionally refuses to place `sign.request` on the wire at all.
+A pairing holding only identity capabilities MUST be refused **`spend.request`** with
+`CAP_NOT_GRANTED` — an identity grant can never open the money boundary. The same pairing MUST be
+refused `sign.request`, which is gated independently by the pairing scope.
+
+dig-chat additionally refuses to place EITHER method on the wire at all, whoever asks: the refused set
+is `spend.request` and `sign.request` together (`REFUSED_METHODS`). A conformance test MUST assert
+both, and MUST assert that neither appears in `REQUESTED_CAPABILITIES`. Asserting only `sign.request`
+would leave the money method reachable while reading as a money guard (dig_ecosystem#1552).
 
 ---
 
